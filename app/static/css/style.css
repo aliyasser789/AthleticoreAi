@@ -1,0 +1,84 @@
+/*  Background */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)), 
+                url('../images/background.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    color: white;
+}
+
+
+/*   The Login Box  */
+.login-container {
+    width: 350px;
+    padding: 40px;
+    background: #0A0A0A; /* Solid dark card */
+    border: 1px solid #333;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.1); /* Blue glow around box */
+    text-align: center;
+}
+
+/*  The Logo : Futuristic Text */
+.logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+.ai-text { color: #00A8FF; } 
+
+/*  Inputs  */
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #1F1F1F;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    box-sizing: border-box; 
+}
+
+input:focus {
+    outline: none;
+    border-color: #00A8FF; /* Blue border when typing */
+}
+
+/*  Button */
+button {
+    width: 100%;
+    padding: 15px;
+    background: #00A8FF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #008ecf;
+    box-shadow: 0 0 15px rgba(0, 168, 255, 0.5); /* Glow effect in button */
+}
+
+/*  Footer Links  */
+.form-footer {
+    display: flex;
+    justify-content: space-between; /* Pushes links apart */
+    margin-top: 15px;
+    font-size: 13px;
+}
+.form-footer a {
+    color: #666;
+    text-decoration: none;
+}
+.form-footer a:hover { color: #00A8FF; }
