@@ -12,15 +12,63 @@
 <body>
    <div class="login-container">
     <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
-    <form>
-        <input type="text" placeholder="username or email" name="username" required>
-        <input type="password" placeholder="password" name="password" required>
-        <button type="submit" text="Login">Login</button>
+    <form id="login-form" novalidate>
+        <input type="text" placeholder="username or email" name="identifier" required autocomplete="username">
+        <input type="password" placeholder="password" name="password" required autocomplete="current-password">
+        <button type="submit">Login</button>
+        <p class="form-status" aria-live="polite"></p>
     </form>
     <div class="form-footer">
     <a href="register.html">Create Account</a>
     <a href="forgot_password.html">Forgot Password?</a>
     </div>
    </div>
+   <script>
+        const loginForm = document.getElementById('login-form');
+        const loginStatus = loginForm.querySelector('.form-status');
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loginStatus.textContent = 'Signing you in...';
+
+            const formData = new FormData(loginForm);
+            const payload = {
+                identifier: formData.get('identifier').trim(),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    loginStatus.textContent = data.error || 'Login failed. Please try again.';
+                    loginStatus.style.color = '#ff6b6b';
+                    return;
+                }
+
+                loginStatus.textContent = 'Welcome back, redirecting...';
+                loginStatus.style.color = '#4ade80';
+
+                // Optionally store the user profile for later use
+                localStorage.setItem('athleticore_user', JSON.stringify(data.user));
+
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            } catch (error) {
+                console.error(error);
+                loginStatus.textContent = 'Network error. Please try again.';
+                loginStatus.style.color = '#ff6b6b';
+            }
+        });
+   </script>
 </body>
 </html>

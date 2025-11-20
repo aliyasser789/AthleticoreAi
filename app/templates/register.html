@@ -13,15 +13,61 @@
    <div class="login-container">
     <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
     <p class="subtitle">Create Account</p>
-    <form>
-        <input type="email" placeholder="email" name="email" required>
-        <input type="username" placeholder="username" name="username" required>
-        <input type="password" placeholder="password" name="password" required>
-        <button type="submit" text="Sign Up">Login</button>
+    <form id="register-form" novalidate>
+        <input type="email" placeholder="email" name="email" required autocomplete="email">
+        <input type="text" placeholder="username" name="username" required autocomplete="username">
+        <input type="password" placeholder="password" name="password" required autocomplete="new-password">
+        <button type="submit">Sign Up</button>
+        <p class="form-status" aria-live="polite"></p>
     </form>
     <div class="form-footer">
         <a href="login.html">Already have an account? Login</a>
     </div>
    </div>
+   <script>
+        const registerForm = document.getElementById('register-form');
+        const registerStatus = registerForm.querySelector('.form-status');
+
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            registerStatus.textContent = 'Creating your account...';
+
+            const formData = new FormData(registerForm);
+            const payload = {
+                email: formData.get('email').trim(),
+                username: formData.get('username').trim(),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    registerStatus.textContent = data.error || 'Registration failed. Please try again.';
+                    registerStatus.style.color = '#ff6b6b';
+                    return;
+                }
+
+                registerStatus.textContent = 'Account created! Redirecting to login...';
+                registerStatus.style.color = '#4ade80';
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1200);
+            } catch (error) {
+                console.error(error);
+                registerStatus.textContent = 'Network error. Please try again.';
+                registerStatus.style.color = '#ff6b6b';
+            }
+        });
+   </script>
 </body>
 </html>
