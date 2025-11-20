@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athleticore Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+   <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="tdee.html" class="active">TDEE</a></li>
+            <li><a href="#">Calories</a></li>
+            <li><a href="#">Workout</a></li>
+            <li><a href="#">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+   </nav>
+   <main class="main-content">
+    <div class="chat-section"> 
+        <h1>AI Coach</h1>
+        <div class="chat-window">
+           
+        </div>
+        <div class="chat-input-area">
+                <input type="text" placeholder="Type a message..." class="chat-input" autocomplete="off">
+                <button type="button" class="send-btn">SEND</button>
+            </div>
+
+        <section class="chat-form-section">
+            <h2 class="section-title">Your Stats</h2>
+            <form class="stats-grid">
+                <div class="input-group">
+                    <label>Gender</label>
+                    <select name="gender" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Height (cm)</label>
+                    <input type="number" name="height_cm" placeholder="180" min="100" max="250" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" name="weight_kg" placeholder="80" min="30" max="250" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Activity Level</label>
+                    <select name="activity_level" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="1.2">Sedentary</option>
+                        <option value="1.375">Light Exercise</option>
+                        <option value="1.55">Moderate Exercise</option>
+                        <option value="1.725">Heavy Exercise</option>
+                        <option value="1.9">Athlete</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Goal Type</label>
+                    <select name="goal_type" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="cut">Cut (Lose Weight)</option>
+                        <option value="bulk">Bulk (Gain Weight)</option>
+                        <option value="maintain">Maintain</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Goal Offset</label>
+                    <input type="number" name="goal_offset" placeholder="500" step="50">
+                </div>
+
+                <div class="input-group">
+                    <label style="color: #00A8FF;">TDEE Value</label>
+                    <input type="text" name="tdee_value" placeholder="Waiting for AI..." readonly>
+                </div>
+
+                <div class="input-group">
+                    <label style="color: #00A8FF;">Goal Calories</label>
+                    <input type="text" name="goal_calories" placeholder="Waiting for AI..." readonly>
+                </div>
+
+                <button type="submit" class="save-btn">Save & Calculate</button>
+            </form>
+        </section>
+    </div>
+    </main>
+<script>
+    const chatWindow = document.querySelector('.chat-window');
+    const chatInput = document.querySelector('.chat-input');
+    const sendBtn = document.querySelector('.send-btn');
+
+    function appendMessage(text, role = 'bot') {
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message', role === 'user' ? 'user-msg' : 'bot-msg');
+        messageEl.textContent = text;
+        chatWindow.appendChild(messageEl);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        appendMessage(message, 'user');
+        chatInput.value = '';
+        sendBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/tdee/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            appendMessage(data.reply || 'Sorry, I did not understand that.');
+        } catch (error) {
+            appendMessage('There was an error reaching the TDEE coach. Please try again.');
+            console.error(error);
+        } finally {
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+</script>
+</body>
+</html>
