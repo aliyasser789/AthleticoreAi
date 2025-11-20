@@ -82,3 +82,218 @@ button:hover {
     text-decoration: none;
 }
 .form-footer a:hover { color: #00A8FF; }
+
+/* Subtitle text under the logo */
+.subtitle {
+    margin-top: -20px; 
+    margin-bottom: 20px; 
+    color: #888; 
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* --- NEW TOP NAVIGATION LAYOUT --- */
+
+/* 1. The Container */
+.dashboard-body {
+    display: block; /* Stack top to bottom */
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), 
+                url('../images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    overflow: hidden; /* Prevents scrolling */
+}
+
+/* 2. The Glass Top Bar */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    background: rgba(255, 255, 255, 0.03); /* Ultra subtle glass */
+    backdrop-filter: blur(10px); /* Blurs the background behind it */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 3. The Links (Horizontal) */
+.nav-links {
+    display: flex; /* Puts them in a row */
+    gap: 30px; /* Space between words */
+    margin: 0;
+}
+
+.nav-links a {
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5); /* Glow text */
+}
+
+/* --- ANIMATED CONTENT --- */
+
+.main-content {
+    padding: 60px 50px;
+    color: white;
+}
+
+
+.hero-text h1 {
+    font-family: 'Orbitron', sans-serif; /* The Cyberpunk Font */
+    font-size: 56px; 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    
+    /* The Gradient Color */
+    background: linear-gradient(to right, #ffffff, #00A8FF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+}
+
+.subtitle {
+    color: #888;
+    font-size: 18px;
+    margin-bottom: 50px;
+}
+
+/* --- GLASS CARDS (Upscaled) --- */
+.dashboard-cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px; /* More space between cards */
+    margin-top: 60px; /* More space from the top text */
+    flex-wrap: wrap;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.15); /* Your darker opacity */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px; /* More breathing room inside */
+    border-radius: 25px; /* Rounder corners */
+    width: 320px; /* Wider boxes (Was 250px) */
+    min-height: 220px; /* Taller boxes */
+    
+    /* 3D Tilt Setup */
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    
+    /* Center content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    background: rgba(13, 13, 13, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    width: 320px;
+    min-height: 220px;
+    
+    /* 3D Tilt Setup */
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    
+    /* LAYOUT FIX: Align to top, not center */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* <--- This aligns them to the top */
+    padding-top: 40px; /* <--- This pushes them down equally */
+}
+
+.big-number {
+    font-size: 40px; 
+    color: #00A8FF;
+    font-weight: 800; 
+    font-family: 'Orbitron', sans-serif;
+    margin-top: 37px;
+    text-shadow: 0 0 25px rgba(0, 168, 255, 0.5);
+}
+
+/* Specific fix for the Text inside the Circle */
+.cal-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px; /* Bigger number inside circle */
+    font-weight: bold;
+    color: white;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00A8FF;
+    transform: translateY(-10px); /* Moves up when hovered */
+}
+
+/* --- KEYFRAMES (The Typing Logic) --- */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+@keyframes blink {
+    from, to { border-color: transparent }
+    50% { border-color: #00A8FF }
+}
+
+/* --- CIRCULAR PROGRESS BAR --- */
+
+.progress-container {
+    position: relative;
+    width: 160px; /* Updated to match new SVG */
+    height: 160px; /* Updated to match new SVG */
+    margin: 0 auto;
+    margin-top: 15px;
+}
+
+/* Rotates the circle so it starts at the top (12 o'clock) */
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+/* The Neon Blue Line Logic */
+.progress-ring__circle {
+    stroke-dasharray: 327; /* The total length of the circle circumference */
+    stroke-dashoffset: 327; /* Start completely empty */
+    stroke-linecap: round; /* Rounded edges look nicer */
+    transition: stroke-dashoffset 1.5s ease-out; /* The Animation Speed */
+    filter: drop-shadow(0 0 5px #00A8FF); /* Neon Glow */
+}
+
+/* The Text Inside */
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.cal-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.cal-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+}

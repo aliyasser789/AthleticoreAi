@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athleticore Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+   <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="#">TDEE</a></li>
+            <li><a href="#">Calories</a></li>
+            <li><a href="#">Workout</a></li>
+            <li><a href="#">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+   </nav>
+   <main class="main-content">
+        <div class="hero-text">
+            <h1 class="typing-effect">Welcome Back, Athlete.</h1>
+            <p class="subtitle">Your data is ready.</p>
+        </div>
+
+        <div class="dashboard-cards">
+            <div class="card" data-tilt>
+    <h3>Calories Left</h3>
+    <div class="progress-container" style="width: 160px; height: 160px;">
+    <svg class="progress-ring" width="160" height="160">
+        <circle class="progress-ring__circle-bg"
+            stroke="#333" stroke-width="10" fill="transparent"
+            r="70" cx="80" cy="80"/>
+        
+        <circle class="progress-ring__circle"
+            stroke="#00A8FF" stroke-width="10" fill="transparent"
+            r="70" cx="80" cy="80"/>
+    </svg>
+    
+    <div class="progress-text">
+        <span class="cal-value">1,500</span>
+        <span class="cal-label">kcal</span>
+    </div>
+</div>
+    
+     </div> <div class="card" data-tilt>
+                <h3>Current Goal</h3>
+                <div class="big-number">Bulking</div>
+            </div>
+            <div class="card" data-tilt>
+                <h3>Next Workout</h3>
+                <div class="big-number">Leg Day</div>
+            </div>
+        </div>
+   </main>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+   <script>
+    // --- PART 1: 3D TILT EFFECT ---
+    VanillaTilt.init(document.querySelectorAll(".card"), {
+        max: 15,
+        speed: 400,
+        glare: true,
+        "max-glare": 0.5
+    }); // <--- CRITICAL: This closes the Tilt settings!
+
+    // --- PART 2: NEON CIRCLE ANIMATION ---
+    // 1. Select the Circle
+    const circle = document.querySelector('.progress-ring__circle');
+    
+    // Check if the circle exists to prevent errors
+    if (circle) {
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+
+        // 2. Set the circle line length
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = circumference;
+
+        // 3. Function to set progress
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // 4. Trigger the animation
+        setTimeout(() => {
+            setProgress(50); // Fills to 75%
+        }, 500);
+    }
+</script>
+</body>
+</html>
