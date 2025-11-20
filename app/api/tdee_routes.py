@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app.services.tdee_manager import TDEE_manager
-
+from app.services.tdee_assistant_service import tdee_assistant_reply
 
 def register_tdee_routes(app):
     @app.route("/api/tdee/profile", methods=["POST"])
@@ -49,3 +49,17 @@ def register_tdee_routes(app):
         return jsonify({
             "profile": profile.to_dict()
         }), 200
+    @app.route("/api/tdee/chat", methods=["POST"])
+    def tdee_chat():
+        data = request.get_json() or {}
+
+        message = data.get("message")
+
+        if not message:
+            return jsonify({"error": "message is required"}), 400
+
+        reply = tdee_assistant_reply(message)
+
+        return jsonify({"reply": reply}), 200
+
+

@@ -1,24 +1,22 @@
 import os
 import sqlite3
 
-# Where to create the DB file
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "athleticore.db")
 
 
 def create_connection():
-    """Create a connection to the SQLite database."""
     conn = sqlite3.connect(DB_PATH)
-    # Enable foreign keys
+ 
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
 
 def create_tables(conn):
-    """Create all required tables if they do not exist."""
     cursor = conn.cursor()
 
-    # users table
+
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS users (
@@ -32,7 +30,7 @@ def create_tables(conn):
         """
     )
 
-    # tdee_profiles table
+    
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS tdee_profiles (
@@ -53,7 +51,7 @@ def create_tables(conn):
         """
     )
 
-    # calorie_logs table
+   
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS calorie_logs (
@@ -72,7 +70,7 @@ def create_tables(conn):
         """
     )
 
-    # workout_plans table
+   
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS workout_plans (
@@ -91,7 +89,7 @@ def create_tables(conn):
 
 def init_db():
     """Create the database file and all tables."""
-    # Make sure the db folder exists
+ 
     os.makedirs(BASE_DIR, exist_ok=True)
 
     conn = create_connection()
