@@ -51,3 +51,21 @@ def register_auth_routes(app):
                 "email": user.email
             }
         }), 200
+    @app.route("/api/auth/forgot-password", methods=["POST"])
+    def forgot_password():
+        data = request.get_json() or {}
+
+        email = data.get("email")
+
+        if not email:
+            return jsonify({"error": "email is required"}), 400
+
+        user = Authentication_manager.forget_password(email)
+
+        if user is None:
+            return jsonify({"error": "No user found with this email"}), 404
+
+        return jsonify({
+            "message": "A temporary password has been set. Please check your email."
+        }), 200
+
