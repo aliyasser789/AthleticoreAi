@@ -102,8 +102,9 @@ button:hover {
                 url('../images/background.jpg');
     background-size: cover;
     background-position: center;
-    height: 100vh;
-    overflow: hidden; /* Prevents scrolling */
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling for tall content */
 }
 
 /* 2. The Glass Top Bar */
@@ -296,4 +297,128 @@ button:hover {
     font-size: 12px;
     color: #888;
     text-transform: uppercase;
+}
+
+/* --- TDEE PAGE STYLES --- */
+
+/* 1. The Chat Section */
+.chat-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 50px auto; /* Centers it and adds space below */
+}
+
+.chat-window {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    height: 300px;
+    padding: 20px;
+    overflow-y: auto; /* Scrollable */
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Messages */
+.message {
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    max-width: 70%;
+}
+.bot-msg {
+    background: rgba(0, 168, 255, 0.2);
+    color: #fff;
+    align-self: flex-start; /* Left side */
+    border: 1px solid rgba(0, 168, 255, 0.3);
+}
+.user-msg {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ddd;
+    align-self: flex-end; /* Right side */
+}
+
+/* Chat Input */
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+}
+.chat-input {
+    flex-grow: 1; /* Takes up all space */
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+}
+.send-btn {
+    width: 100px;
+    background: #00A8FF;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* 2. The Data Form Section */
+.data-section,
+.chat-form-section {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05); /* Glass background */
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-form-section {
+    margin-top: 30px;
+}
+
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    color: #00A8FF;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+/* The Grid Layout for Inputs */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns */
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    color: #888;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.input-group input, .input-group select {
+    background: #111;
+    border: 1px solid #444;
+    padding: 12px;
+    border-radius: 5px;
+    color: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.save-btn {
+    grid-column: span 2; /* Button stretches across both columns */
+    background: #00A8FF;
+    color: white;
+    padding: 15px;
+    font-size: 18px;
+    font-family: 'Orbitron', sans-serif;
+    margin-top: 20px;
 }
