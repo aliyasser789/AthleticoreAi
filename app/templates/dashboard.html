@@ -14,8 +14,8 @@
         <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
         
         <ul class="nav-links">
-            <li><a href="dashboard.html" class="active">Dashboard</a></li>
-            <li><a href="tdee.html">TDEE</a></li>
+            <li><a href="/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
             <li><a href="#">Calories</a></li>
             <li><a href="#">Workout</a></li>
             <li><a href="#">Coach</a></li>
@@ -24,7 +24,7 @@
    </nav>
    <main class="main-content">
         <div class="hero-text">
-            <h1 class="typing-effect">Welcome Back, Athlete.</h1>
+            <h1 class="typing-effect" id="welcome-heading">Welcome Back, Athlete.</h1>
             <p class="subtitle">Your data is ready.</p>
         </div>
 
@@ -60,6 +60,19 @@
    </main>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
    <script>
+    const storedUser = localStorage.getItem('athleticore_user');
+    if (storedUser) {
+        try {
+            const user = JSON.parse(storedUser);
+            if (user?.username) {
+                const heading = document.getElementById('welcome-heading');
+                heading.textContent = `Welcome Back, ${user.username}.`;
+            }
+        } catch (err) {
+            console.error('Failed to parse stored user', err);
+        }
+    }
+
     // --- PART 1: 3D TILT EFFECT ---
     VanillaTilt.init(document.querySelectorAll(".card"), {
         max: 15,

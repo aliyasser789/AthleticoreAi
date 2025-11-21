@@ -19,8 +19,8 @@
         <p class="form-status" aria-live="polite"></p>
     </form>
     <div class="form-footer">
-    <a href="register.html">Create Account</a>
-    <a href="forgot_password.html">Forgot Password?</a>
+    <a href="/register">Create Account</a>
+    <a href="/forgot-password">Forgot Password?</a>
     </div>
    </div>
    <script>
@@ -61,7 +61,7 @@
                 localStorage.setItem('athleticore_user', JSON.stringify(data.user));
 
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/dashboard';
                 }, 800);
             } catch (error) {
                 console.error(error);
