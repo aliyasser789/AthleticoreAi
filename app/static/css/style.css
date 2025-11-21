@@ -422,3 +422,40 @@ button:hover {
     font-family: 'Orbitron', sans-serif;
     margin-top: 20px;
 }
+
+/* --- Register Page Updates --- */
+
+/* Puts items side-by-side */
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* Style the Dropdown to match inputs */
+/* Style the Dropdown to match inputs */
+select {
+    padding: 15px;
+    background: #1F1F1F;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #888;
+    
+    /* --- NEW: ADD THE ARROW --- */
+    appearance: none; /* 1. Hide default ugly arrow */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2300A8FF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-24.7%200L146.2%20185.6%2029.4%2069.4a17.6%2017.6%200%200%200-24.7%2024.7l128.9%20129a17.6%2017.6%200%200%200%2024.7%200l128.9-129a17.6%2017.6%200%200%200%200-24.7z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px center; /* Position on the right */
+    background-size: 12px; /* Size of the arrow */
+    padding-right: 40px; /* Make room for the arrow so text doesn't overlap */
+    
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+/* Change text color when option is selected */
+select:focus {
+    color: white;
+    border-color: #00A8FF;
+    outline: none;
+}

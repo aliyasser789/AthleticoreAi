@@ -17,6 +17,19 @@
         <input type="email" placeholder="email" name="email" required autocomplete="email">
         <input type="text" placeholder="username" name="username" required autocomplete="username">
         <input type="password" placeholder="password" name="password" required autocomplete="new-password">
+        <div class="form-row">
+    <input type="number" placeholder="Age" name="age" required style="width: 48%;">
+    <select name="gender" required style="width: 48%;">
+        <option value="" disabled selected>Gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select>
+</div>
+
+<div class="form-row">
+    <input type="number" placeholder="Height (cm)" name="height" required style="width: 48%;">
+    <input type="number" placeholder="Weight (kg)" name="weight" required style="width: 48%;">
+</div>
         <button type="submit">Sign Up</button>
         <p class="form-status" aria-live="polite"></p>
     </form>
