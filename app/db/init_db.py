@@ -59,6 +59,35 @@ def create_tables(conn):
         """
     )
 
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS food_feed (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        food_name TEXT,
+        calories REAL,
+        protein_g REAL,
+        carbs_g REAL,
+        fat_g REAL,
+        entry_date TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """
+    )
+
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS food_chat (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        food_feed_id INTEGER NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (food_feed_id) REFERENCES food_feed(id) ON DELETE CASCADE
+        );
+        """
+    )
+
     conn.commit()
 
 

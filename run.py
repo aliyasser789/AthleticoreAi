@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from app.api.auth_routes import register_auth_routes
 from app.api.tdee_routes import register_tdee_routes
+from app.api.food_feed_routes import register_food_feed_routes
 
 
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -35,6 +36,7 @@ def forgot_password_page():
 # Register routes from other files
 register_auth_routes(app)
 register_tdee_routes(app)
+register_food_feed_routes(app)
 
 
 
