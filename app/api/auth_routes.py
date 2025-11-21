@@ -10,11 +10,15 @@ def register_auth_routes(app):
         username = data.get("username")
         email = data.get("email")
         password = data.get("password")
+        age= data.get("age")
+        gender=data.get("gender")
+        height=data.get("height")
+        weight=data.get("weight")
 
-        if not username or not email or not password:
-            return jsonify({"error": "username, email and password are required"}), 400
+        if not username or not email or not password or not age or not gender or not height or not weight:
+            return jsonify({"error": "fill all requirement"}), 400
 
-        user = Authentication_manager.register_user(username, email, password)
+        user = Authentication_manager.register_user(username, email, password, age, gender, height, weight)
 
         if user is None:
             return jsonify({"error": "Username or email already taken"}), 409
@@ -24,7 +28,11 @@ def register_auth_routes(app):
             "user": {
                 "id": user.id,
                 "username": user.username,
-                "email": user.email
+                "email": user.email,
+                "age":user.age,
+                "gender":gender,
+                "height":height,
+                "weight":weight
             }
         }), 201
 

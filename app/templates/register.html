@@ -49,7 +49,11 @@
             const payload = {
                 email: formData.get('email').trim(),
                 username: formData.get('username').trim(),
-                password: formData.get('password')
+                password: formData.get('password'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender'),
+                height: parseInt(formData.get('height')),
+                weight: parseInt(formData.get('weight'))
             };
 
             try {

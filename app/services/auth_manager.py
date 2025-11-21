@@ -8,7 +8,7 @@ import string
 
 class Authentication_manager:
     @staticmethod
-    def hash_passowrd(real_password):
+    def hash_password(real_password):
         password_bytes = real_password.encode("utf-8")
         hash_password_obj = hashlib.sha256(password_bytes)
         hash_password_string = hash_password_obj.hexdigest()
@@ -21,7 +21,7 @@ class Authentication_manager:
         return "".join(secrets.choice(alphabet) for _ in range(length))
 
     @staticmethod
-    def register_user(username, email, password):
+    def register_user(username, email, password, age, gender, height, weight):
         row = db_helper.fetch_one(
             "SELECT * FROM users WHERE username = ?",
             (username,)
@@ -38,12 +38,12 @@ class Authentication_manager:
             print("Email already taken")
             return None
 
-        hashed_pass = Authentication_manager.hash_passowrd(password)
+        hashed_pass = Authentication_manager.hash_password(password)
         created_at = User.now_iso()
 
         db_helper.execute_query(
-            "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
-            (username, email, hashed_pass, created_at)
+            "INSERT INTO users (username, email, password_hash, created_at, age, gender, height, weight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (username, email, hashed_pass, created_at, age, gender, height , weight)
         )
 
         row = db_helper.fetch_one(
@@ -64,7 +64,7 @@ class Authentication_manager:
             return None
 
         user = User.from_row(row)
-        entered_hash = Authentication_manager.hash_passowrd(password)
+        entered_hash = Authentication_manager.hash_password(password)
 
         if entered_hash != user.password_hash:
             print("WRONG PASSWORD")
@@ -90,7 +90,7 @@ class Authentication_manager:
         temp_pass = Authentication_manager._generate_temp_password(length=12)
 
         # 3) Hash the temporary password using your existing function
-        temp_pass_hash = Authentication_manager.hash_passowrd(temp_pass)
+        temp_pass_hash = Authentication_manager.hash_password(temp_pass)
 
         # 4) Update password_hash in DB
         db_helper.execute_query(
