@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 <body class="dashboard-body">
    <nav class="top-nav">
@@ -22,73 +22,43 @@
         </ul>
    </nav>
    <main class="main-content">
+        <div class="chat-section">
+            <h1>AI Coach</h1>
+            <div class="chat-window"></div>
+            <div class="chat-input-area">
+                <input type="text" placeholder="Type a message..." class="chat-input" autocomplete="off">
+                <button type="button" class="send-btn">SEND</button>
+            </div>
+        </div>
+
         <section class="chat-form-section">
-            <h2 class="section-title">Enter Your Stats</h2>
-            <form class="stats-grid" id="user-stats-form">
+            <h2 class="section-title">TDEE Information</h2>
+            <form class="stats-grid" id="tdee-info-form">
                 <div class="input-group">
-                    <label>Gender</label>
-                    <select name="gender" required>
+                    <label>Activity Level Factor</label>
+                    <input type="number" name="activity_level" id="activity-level-input" placeholder="1.2" step="0.1" min="1.0" max="2.5" required>
+                </div>
+                <div class="input-group">
+                    <label>TDEE (kcal)</label>
+                    <input type="number" name="tdee_value" id="tdee-value-input" placeholder="2000" min="0" required>
+                </div>
+                <div class="input-group">
+                    <label>Goal Calories (kcal)</label>
+                    <input type="number" name="goal_calories" id="goal-calories-input" placeholder="2500" min="0" required>
+                </div>
+                <div class="input-group">
+                    <label>Goal</label>
+                    <select name="goal_type" id="goal-type-input" required>
                         <option value="" disabled selected>Select</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Age</label>
-                    <input type="number" name="age" placeholder="30" min="10" max="90" required>
-                </div>
-                <div class="input-group">
-                    <label>Height (cm)</label>
-                    <input type="number" name="height_cm" placeholder="180" min="100" max="250" required>
-                </div>
-                <div class="input-group">
-                    <label>Weight (kg)</label>
-                    <input type="number" name="weight_kg" placeholder="80" min="30" max="250" required>
-                </div>
-                <div class="input-group">
-                    <label>Goal Type</label>
-                    <select name="goal_type" required>
-                        <option value="" disabled selected>Select</option>
-                        <option value="cut">Cut (Lose Weight)</option>
-                        <option value="bulk">Bulk (Gain Weight)</option>
+                        <option value="cut">Cut</option>
+                        <option value="bulk">Bulk</option>
                         <option value="maintain">Maintain</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label>Goal Offset (kcal)</label>
-                    <input type="number" name="goal_offset" placeholder="500" step="50">
-                </div>
-                <button type="submit" class="save-btn">Save Stats</button>
+                <p class="form-status" aria-live="polite"></p>
+                <button type="submit" class="save-btn" id="save-tdee-btn">Save TDEE</button>
             </form>
         </section>
-
-        <div class="chat-summary-wrapper">
-            <div class="chat-section">
-                <h1>AI Coach</h1>
-                <div class="chat-window"></div>
-                <div class="chat-input-area">
-                    <input type="text" placeholder="Type a message..." class="chat-input" autocomplete="off" disabled>
-                    <button type="button" class="send-btn" disabled>SEND</button>
-                </div>
-            </div>
-
-            <section class="chat-form-section">
-                <h2 class="section-title">AI Summary</h2>
-                <div class="stats-grid summary-grid">
-                    <div class="summary-item"><label>Gender</label><span id="summary-gender">--</span></div>
-                    <div class="summary-item"><label>Age</label><span id="summary-age">--</span></div>
-                    <div class="summary-item"><label>Height (cm)</label><span id="summary-height">--</span></div>
-                    <div class="summary-item"><label>Weight (kg)</label><span id="summary-weight">--</span></div>
-                    <div class="summary-item"><label>Goal Type</label><span id="summary-goal-type">--</span></div>
-                    <div class="summary-item"><label>Goal Offset</label><span id="summary-goal-offset">--</span></div>
-                    <div class="summary-item"><label>Activity Factor</label><span id="summary-activity">--</span></div>
-                    <div class="summary-item highlight"><label style="color:#00A8FF;">TDEE Value</label><span id="summary-tdee">Waiting for AI...</span></div>
-                    <div class="summary-item highlight"><label style="color:#00A8FF;">Goal Calories</label><span id="summary-goal-calories">Waiting for AI...</span></div>
-                </div>
-                <p class="form-status" aria-live="polite"></p>
-                <button type="button" class="save-btn" id="save-tdee-btn" disabled>Save TDEE</button>
-            </section>
-        </div>
     </main>
 <script>
     const chatWindow = document.querySelector(".chat-window");
@@ -96,68 +66,18 @@
     const sendBtn = document.querySelector(".send-btn");
     const saveBtn = document.getElementById("save-tdee-btn");
     const statusText = document.querySelector(".form-status");
-    const statsForm = document.getElementById("user-stats-form");
-
-    const summaryFields = {
-        gender: document.getElementById("summary-gender"),
-        age: document.getElementById("summary-age"),
-        height_cm: document.getElementById("summary-height"),
-        weight_kg: document.getElementById("summary-weight"),
-        goal_type: document.getElementById("summary-goal-type"),
-        goal_offset: document.getElementById("summary-goal-offset"),
-        activity_level: document.getElementById("summary-activity"),
-        tdee_value: document.getElementById("summary-tdee"),
-        goal_calories: document.getElementById("summary-goal-calories")
-    };
+    const tdeeInfoForm = document.getElementById("tdee-info-form");
 
     const storedUser = localStorage.getItem("athleticore_user");
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
-    if (!currentUser) {
-        window.location.href = "/login";
-    }
 
     const chatHistory = [];
-    let userStats = null;
     let latestTdeeResult = null;
-
-    function updateChatAvailability() {
-        const ready = Boolean(userStats);
-        chatInput.disabled = !ready;
-        sendBtn.disabled = !ready;
-    }
 
     function setStatus(message = "", color = "#fff") {
         if (!statusText) return;
         statusText.textContent = message;
         statusText.style.color = color;
-    }
-
-    function renderSummary() {
-        summaryFields.gender.textContent = userStats?.gender ?? "--";
-        summaryFields.age.textContent = userStats?.age ?? "--";
-        summaryFields.height_cm.textContent = userStats?.height_cm ?? "--";
-        summaryFields.weight_kg.textContent = userStats?.weight_kg ?? "--";
-        summaryFields.goal_type.textContent = userStats?.goal_type ?? "--";
-        summaryFields.goal_offset.textContent = userStats?.goal_offset ?? "--";
-        summaryFields.activity_level.textContent = latestTdeeResult?.activity_level
-            ? `${latestTdeeResult.activity_level}`
-            : "--";
-        summaryFields.tdee_value.textContent = latestTdeeResult?.tdee_value
-            ? `${Math.round(latestTdeeResult.tdee_value)} kcal`
-            : "Waiting for AI...";
-        summaryFields.goal_calories.textContent = latestTdeeResult?.goal_calories
-            ? `${Math.round(latestTdeeResult.goal_calories)} kcal`
-            : "Waiting for AI...";
-    }
-
-    function refreshSaveState() {
-        const canSave = Boolean(userStats) && Boolean(latestTdeeResult?.ready_to_save) && latestTdeeResult?.activity_level;
-        saveBtn.disabled = !canSave;
-        if (canSave) {
-            setStatus("Ready to save this TDEE plan.", "#4ade80");
-        } else if (!latestTdeeResult?.ready_to_save) {
-            setStatus("Keep chatting so we can finish your plan.", "#fbbf24");
-        }
     }
 
     function appendMessage(text, role = "bot") {
@@ -168,28 +88,9 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    statsForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const formData = new FormData(statsForm);
-        const stats = Object.fromEntries(formData.entries());
-        userStats = {
-            gender: stats.gender,
-            age: Number(stats.age),
-            height_cm: Number(stats.height_cm),
-            weight_kg: Number(stats.weight_kg),
-            goal_type: stats.goal_type,
-            goal_offset: Number(stats.goal_offset || 0)
-        };
-        latestTdeeResult = null;
-        renderSummary();
-        updateChatAvailability();
-        setStatus("Stats saved! Chat with the coach to calculate your plan.", "#4ade80");
-    });
-
     async function sendMessage() {
         const message = chatInput.value.trim();
-        if (!message || !userStats) {
-            setStatus("Please fill in your stats first.", "#ff6b6b");
+        if (!message) {
             return;
         }
 
@@ -205,8 +106,7 @@
                 body: JSON.stringify({
                     message,
                     username: currentUser?.username,
-                    history: chatHistory,
-                    stats: userStats
+                    history: chatHistory
                 })
             });
 
@@ -220,8 +120,19 @@
             chatHistory.push({ role: "assistant", content: replyText });
             if (data.tdee_result) {
                 latestTdeeResult = data.tdee_result;
-                renderSummary();
-                refreshSaveState();
+                // Optionally populate form fields if AI provides values
+                if (data.tdee_result.activity_level) {
+                    document.getElementById("activity-level-input").value = data.tdee_result.activity_level;
+                }
+                if (data.tdee_result.tdee_value) {
+                    document.getElementById("tdee-value-input").value = Math.round(data.tdee_result.tdee_value);
+                }
+                if (data.tdee_result.goal_calories) {
+                    document.getElementById("goal-calories-input").value = Math.round(data.tdee_result.goal_calories);
+                }
+                if (data.tdee_result.goal_type) {
+                    document.getElementById("goal-type-input").value = data.tdee_result.goal_type;
+                }
             }
         } catch (error) {
             appendMessage("There was an error reaching the TDEE coach. Please try again.");
@@ -240,29 +151,31 @@
         }
     });
 
-    saveBtn.addEventListener("click", async () => {
-        if (saveBtn.disabled || !userStats || !latestTdeeResult) return;
+    tdeeInfoForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
         if (!currentUser?.id) {
             setStatus("Please log in again.", "#ff6b6b");
             return;
         }
-        if (!latestTdeeResult.activity_level) {
-            setStatus("Waiting for the coach to provide your activity factor.", "#fbbf24");
-            return;
-        }
+
+        const formData = new FormData(tdeeInfoForm);
+        const tdeeData = Object.fromEntries(formData.entries());
+
+        // Convert activity_level to string (it's stored as TEXT in database)
+        const activityLevelValue = tdeeData.activity_level ? String(tdeeData.activity_level) : "";
+        const tdeeValue = parseFloat(tdeeData.tdee_value);
+        const goalCalories = parseFloat(tdeeData.goal_calories);
+        
+        // Calculate goal_offset from the difference
+        const goalOffset = Math.round(goalCalories - tdeeValue);
 
         const payload = {
             user_id: currentUser.id,
-            age: userStats.age,
-            gender: userStats.gender,
-            height_cm: userStats.height_cm,
-            weight_kg: userStats.weight_kg,
-            activity_level: latestTdeeResult.activity_level,
-            tdee_value: latestTdeeResult.tdee_value,
-            goal_type: latestTdeeResult.goal_type || userStats.goal_type,
-            goal_offset: latestTdeeResult.goal_offset ?? userStats.goal_offset,
-            goal_calories: latestTdeeResult.goal_calories,
-            chat_history: chatHistory
+            activity_level: activityLevelValue,
+            tdee_value: tdeeValue,
+            goal_type: tdeeData.goal_type,
+            goal_offset: goalOffset,
+            goal_calories: goalCalories
         };
 
         try {
@@ -286,58 +199,47 @@
 
     async function loadSavedProfile() {
         if (!currentUser?.id) {
-            updateChatAvailability();
             return;
         }
         try {
             const response = await fetch(`/api/tdee/profile/${currentUser.id}`);
             if (!response.ok) {
-                updateChatAvailability();
                 return;
             }
             const data = await response.json();
             const profile = data.profile;
             if (!profile) {
-                updateChatAvailability();
                 return;
             }
 
-            userStats = {
-                gender: profile.gender,
-                age: profile.age,
-                height_cm: profile.height_cm,
-                weight_kg: profile.weight_kg,
-                goal_type: profile.goal_type,
-                goal_offset: profile.goal_offset
-            };
-
-            if (statsForm.elements.gender) statsForm.elements.gender.value = profile.gender || "";
-            if (statsForm.elements.age) statsForm.elements.age.value = profile.age || "";
-            if (statsForm.elements.height_cm) statsForm.elements.height_cm.value = profile.height_cm || "";
-            if (statsForm.elements.weight_kg) statsForm.elements.weight_kg.value = profile.weight_kg || "";
-            if (statsForm.elements.goal_type) statsForm.elements.goal_type.value = profile.goal_type || "";
-            if (statsForm.elements.goal_offset) statsForm.elements.goal_offset.value = profile.goal_offset || "";
+            // Populate TDEE info form
+            if (profile.activity_level) {
+                document.getElementById("activity-level-input").value = profile.activity_level;
+            }
+            if (profile.tdee_value) {
+                document.getElementById("tdee-value-input").value = profile.tdee_value;
+            }
+            if (profile.goal_calories) {
+                document.getElementById("goal-calories-input").value = profile.goal_calories;
+            }
+            if (profile.goal_type) {
+                document.getElementById("goal-type-input").value = profile.goal_type;
+            }
 
             latestTdeeResult = {
                 tdee_value: profile.tdee_value,
                 goal_type: profile.goal_type,
-                goal_offset: profile.goal_offset,
                 goal_calories: profile.goal_calories,
                 activity_level: profile.activity_level,
                 ready_to_save: true
             };
 
-            renderSummary();
-            updateChatAvailability();
-            refreshSaveState();
             setStatus("Loaded your latest TDEE plan.", "#93c5fd");
         } catch (error) {
             console.error("Failed to load saved TDEE profile", error);
-            updateChatAvailability();
         }
     }
 
-    updateChatAvailability();
     loadSavedProfile();
 </script>
 </body>

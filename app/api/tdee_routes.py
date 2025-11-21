@@ -91,8 +91,23 @@ def register_tdee_routes(app):
         goal_offset = data.get("goal_offset")
         goal_calories = data.get("goal_calories")
         
-        if not all([user_id, activity_level, tdee_value, goal_type, goal_offset is not None, goal_calories]):
-            return jsonify({"error": "All fields are required"}), 400
+        # Validate all required fields
+        missing_fields = []
+        if not user_id:
+            missing_fields.append("user_id")
+        if not activity_level:
+            missing_fields.append("activity_level")
+        if tdee_value is None:
+            missing_fields.append("tdee_value")
+        if not goal_type:
+            missing_fields.append("goal_type")
+        if goal_offset is None:
+            missing_fields.append("goal_offset")
+        if goal_calories is None:
+            missing_fields.append("goal_calories")
+        
+        if missing_fields:
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
         
         try:
             profile = TdeeService.save_profile(

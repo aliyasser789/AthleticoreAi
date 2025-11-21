@@ -97,7 +97,7 @@ def chat_with_coach(
     try:
         # Call Groq API
         response = client.chat.completions.create(
-            model="llama-3.1-70b-versatile",  # or another Llama model
+            model="llama-3.3-70b-versatile",  # Updated to current model
             messages=messages,
             temperature=0.7,
             max_tokens=1000
