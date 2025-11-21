@@ -25,6 +25,10 @@ def dashboard_page():
 def forgot_password_page():
     return render_template("forgot_password.html")
 
+@app.route("/tdee")
+def tdee_page():
+    return render_template("tdee.html")
+
 # Register routes from other files
 register_auth_routes(app)
 register_tdee_routes(app)

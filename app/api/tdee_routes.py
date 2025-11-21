@@ -54,12 +54,18 @@ def register_tdee_routes(app):
         data = request.get_json() or {}
 
         message = data.get("message")
+        username = data.get("username")
+        history = data.get("history") or []
 
         if not message:
             return jsonify({"error": "message is required"}), 400
 
-        reply = tdee_assistant_reply(message)
+        assistant_response = tdee_assistant_reply(
+            message,
+            username=username,
+            previous_messages=history if isinstance(history, list) else [],
+        )
 
-        return jsonify({"reply": reply}), 200
+        return jsonify(assistant_response), 200
 
 
