@@ -327,17 +327,21 @@ button:hover {
     border-radius: 10px;
     font-size: 14px;
     max-width: 70%;
+    opacity: 1 !important;
+    visibility: visible !important;
+    word-wrap: break-word;
 }
 .bot-msg {
     background: rgba(0, 168, 255, 0.2);
-    color: #fff;
+    color: #fff !important;
     align-self: flex-start; /* Left side */
     border: 1px solid rgba(0, 168, 255, 0.3);
 }
 .user-msg {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ddd;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff !important;
     align-self: flex-end; /* Right side */
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Chat Input */
@@ -379,9 +383,22 @@ button:hover {
 
 .section-title {
     font-family: 'Orbitron', sans-serif;
-    color: #00A8FF;
+    color: #00A8FF !important;
     margin-bottom: 20px;
     font-size: 24px;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+}
+
+.date-display {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #888;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* The Grid Layout for Inputs */
@@ -514,6 +531,7 @@ select:focus {
     flex-direction: row;
     gap: 15px;
     margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
 .macro-box {
@@ -528,7 +546,7 @@ select:focus {
 .macro-label {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    color: #888;
+    color: #888 !important;
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -538,7 +556,7 @@ select:focus {
     font-family: 'Orbitron', sans-serif;
     font-size: 24px;
     font-weight: 700;
-    color: #00A8FF;
+    color: #00A8FF !important;
     text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
 }
 
@@ -573,34 +591,80 @@ select:focus {
 
 /* Food Item */
 .food-item {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     border-left: 3px solid #00A8FF;
     border-radius: 8px;
     padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
     transition: all 0.3s ease;
+    opacity: 1;
+    visibility: visible;
+    margin-bottom: 8px;
 }
 
 .food-item:hover {
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     border-left-color: #008ecf;
     transform: translateX(5px);
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.food-item-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .food-name {
     font-family: 'Inter', sans-serif;
     font-size: 16px;
-    color: #fff;
+    color: #fff !important;
     font-weight: 600;
+    flex: 1;
 }
 
 .food-calories {
     font-family: 'Orbitron', sans-serif;
     font-size: 14px;
-    color: #00A8FF;
+    color: #00A8FF !important;
     font-weight: 600;
+}
+
+.food-macros {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.macro-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.macro-badge.protein {
+    background: rgba(0, 168, 255, 0.2);
+    color: #00A8FF;
+    border: 1px solid rgba(0, 168, 255, 0.3);
+}
+
+.macro-badge.carbs {
+    background: rgba(255, 193, 7, 0.2);
+    color: #FFC107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.macro-badge.fat {
+    background: rgba(255, 87, 34, 0.2);
+    color: #FF5722;
+    border: 1px solid rgba(255, 87, 34, 0.3);
 }
 
 /* Right Column: Chat Section */
@@ -630,47 +694,65 @@ select:focus {
 }
 
 /* Chat Input Area */
+.chat-input-area {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .calories-chat-input {
-    flex-grow: 1;
+    flex: 1;
+    min-width: 0;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 15px;
     border-radius: 8px;
-    color: white;
+    color: white !important;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
+    box-sizing: border-box;
 }
 
 .calories-chat-input:focus {
     outline: none;
     border-color: #00A8FF;
     box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .calories-chat-input::placeholder {
     color: #888;
+    opacity: 1;
 }
 
 .log-btn {
-    width: 100px;
-    background: #00A8FF;
-    color: white;
+    flex-shrink: 0;
+    width: 120px;
+    background: #00A8FF !important;
+    color: white !important;
     font-weight: bold;
     border: none;
     border-radius: 8px;
-    padding: 15px;
+    padding: 15px 20px;
     font-family: 'Orbitron', sans-serif;
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .log-btn:hover {
-    background: #008ecf;
+    background: #008ecf !important;
     box-shadow: 0 0 15px rgba(0, 168, 255, 0.5);
     transform: translateY(-2px);
 }
 
 .log-btn:active {
     transform: translateY(0);
+}
+
+.log-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

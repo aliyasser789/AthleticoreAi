@@ -26,46 +26,34 @@
         <div class="tracker-container">
             <!-- LEFT COLUMN: Daily Log -->
             <div class="log-section">
-                <h2 class="section-title">Daily Log</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="margin: 0;">Daily Log</h2>
+                    <div class="date-display" id="current-date"></div>
+                </div>
                 
                 <!-- Macro Summary Row -->
                 <div class="macro-summary">
                     <div class="macro-box">
                         <div class="macro-label">Protein</div>
-                        <div class="macro-value">120g</div>
+                        <div class="macro-value" id="total-protein">0g</div>
                     </div>
                     <div class="macro-box">
                         <div class="macro-label">Carbs</div>
-                        <div class="macro-value">250g</div>
+                        <div class="macro-value" id="total-carbs">0g</div>
                     </div>
                     <div class="macro-box">
                         <div class="macro-label">Fats</div>
-                        <div class="macro-value">65g</div>
+                        <div class="macro-value" id="total-fats">0g</div>
+                    </div>
+                    <div class="macro-box">
+                        <div class="macro-label">Calories</div>
+                        <div class="macro-value" id="total-calories">0</div>
                     </div>
                 </div>
 
                 <!-- Food Items Feed -->
-                <div class="food-feed">
-                    <div class="food-item">
-                        <div class="food-name">Oatmeal</div>
-                        <div class="food-calories">350 kcal</div>
-                    </div>
-                    <div class="food-item">
-                        <div class="food-name">Chicken Breast</div>
-                        <div class="food-calories">231 kcal</div>
-                    </div>
-                    <div class="food-item">
-                        <div class="food-name">Brown Rice</div>
-                        <div class="food-calories">216 kcal</div>
-                    </div>
-                    <div class="food-item">
-                        <div class="food-name">Broccoli</div>
-                        <div class="food-calories">55 kcal</div>
-                    </div>
-                    <div class="food-item">
-                        <div class="food-name">Protein Shake</div>
-                        <div class="food-calories">120 kcal</div>
-                    </div>
+                <div class="food-feed" id="food-feed">
+                    <!-- Food items will be dynamically added here -->
                 </div>
             </div>
 
@@ -75,46 +63,340 @@
                 <div class="chat-window calories-chat-window"></div>
                 <div class="chat-input-area">
                     <input type="text" placeholder="Type a message..." class="chat-input calories-chat-input" autocomplete="off">
-                    <button type="button" class="log-btn">Log</button>
+                    <button type="button" class="log-btn">LOG IT</button>
                 </div>
             </div>
         </div>
    </main>
    <script>
-        const chatWindow = document.querySelector('.calories-chat-window');
-        const chatInput = document.querySelector('.calories-chat-input');
-        const logBtn = document.querySelector('.log-btn');
+        // Get current user from localStorage
+        const storedUser = localStorage.getItem('athleticore_user');
+        const currentUser = storedUser ? JSON.parse(storedUser) : null;
+        
+        if (!currentUser) {
+            window.location.href = '/login';
+        }
+        
+        // Initialize state variables
+        let totalProtein = 0;
+        let totalCarbs = 0;
+        let totalFat = 0;
+        let totalCalories = 0;
+        let chatHistory = [];
+        let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        // DOM elements (will be set in DOMContentLoaded)
+        let chatWindow, chatInput, logBtn, foodFeed;
+        
+        // Function to get today's date in YYYY-MM-DD format
+        function getTodayDate() {
+            return new Date().toISOString().split('T')[0];
+        }
+        
+        // Function to format date for display
+        function formatDateDisplay(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+        
+        // Function to check if date has changed and reset if needed
+        function checkDateReset() {
+            const today = getTodayDate();
+            if (today !== currentDate) {
+                // Date has changed - reset everything
+                currentDate = today;
+                totalProtein = 0;
+                totalCarbs = 0;
+                totalFat = 0;
+                totalCalories = 0;
+                chatHistory = [];
+                
+                // Clear the food feed
+                if (foodFeed) {
+                    foodFeed.innerHTML = '';
+                }
+                
+                // Clear the chat window
+                if (chatWindow) {
+                    chatWindow.innerHTML = '';
+                    appendMessage('Hi! I\'m your AI Nutrition Coach. Tell me what you ate and I\'ll log it for you!', 'bot');
+                }
+                
+                // Update macro displays
+                updateMacroDisplays();
+                
+                // Update date display
+                updateDateDisplay();
+                
+                // Reload today's logs
+                loadTodayLogs();
+                
+                console.log('Date reset: New day started!');
+            }
+        }
+        
+        // Function to update date display
+        function updateDateDisplay() {
+            const dateDisplay = document.getElementById('current-date');
+            if (dateDisplay) {
+                dateDisplay.textContent = formatDateDisplay(currentDate);
+            }
+        }
+        
+        // Function to update macro displays
+        function updateMacroDisplays() {
+            const proteinEl = document.getElementById('total-protein');
+            const carbsEl = document.getElementById('total-carbs');
+            const fatsEl = document.getElementById('total-fats');
+            const caloriesEl = document.getElementById('total-calories');
+            
+            if (proteinEl) proteinEl.textContent = Math.round(totalProtein) + 'g';
+            if (carbsEl) carbsEl.textContent = Math.round(totalCarbs) + 'g';
+            if (fatsEl) fatsEl.textContent = Math.round(totalFat) + 'g';
+            if (caloriesEl) caloriesEl.textContent = Math.round(totalCalories);
+        }
 
+        // Function to append message to chat window
         function appendMessage(text, role = 'bot') {
+            if (!chatWindow) {
+                console.error('Chat window element not found');
+                return;
+            }
+            
             const messageEl = document.createElement('div');
             messageEl.classList.add('message', role === 'user' ? 'user-msg' : 'bot-msg');
             messageEl.textContent = text;
+            messageEl.style.opacity = '1';
+            messageEl.style.visibility = 'visible';
             chatWindow.appendChild(messageEl);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        function sendMessage() {
+        // Function to update macro totals and display
+        function updateMacros(foodItem) {
+            console.log('Updating macros with:', foodItem);
+            
+            const protein = parseFloat(foodItem.protein) || 0;
+            const carbs = parseFloat(foodItem.carbs) || 0;
+            const fat = parseFloat(foodItem.fat) || 0;
+            const calories = parseFloat(foodItem.calories) || 0;
+            
+            totalProtein += protein;
+            totalCarbs += carbs;
+            totalFat += fat;
+            totalCalories += calories;
+            
+            // Update macro displays using the helper function
+            updateMacroDisplays();
+            
+            console.log('Macros updated - Protein:', totalProtein, 'Carbs:', totalCarbs, 'Fat:', totalFat, 'Calories:', totalCalories);
+        }
+
+        // Function to add food item to the feed
+        function addFoodItem(foodItem) {
+            if (!foodFeed) {
+                console.error('Food feed element not found');
+                return;
+            }
+            
+            const foodItemEl = document.createElement('div');
+            foodItemEl.classList.add('food-item');
+            
+            const foodName = foodItem.name || 'Food Item';
+            const calories = Math.round(foodItem.calories || 0);
+            const protein = Math.round(foodItem.protein || 0);
+            const carbs = Math.round(foodItem.carbs || 0);
+            const fat = Math.round(foodItem.fat || 0);
+            
+            foodItemEl.innerHTML = `
+                <div class="food-item-main">
+                    <div class="food-name">${foodName}</div>
+                    <div class="food-calories">${calories} kcal</div>
+                </div>
+                <div class="food-macros">
+                    <span class="macro-badge protein">P: ${protein}g</span>
+                    <span class="macro-badge carbs">C: ${carbs}g</span>
+                    <span class="macro-badge fat">F: ${fat}g</span>
+                </div>
+            `;
+            
+            foodFeed.appendChild(foodItemEl);
+            
+            // Scroll to bottom to show new item
+            foodFeed.scrollTop = foodFeed.scrollHeight;
+            
+            console.log('Food item added:', foodName, calories, 'kcal', 'P:', protein, 'C:', carbs, 'F:', fat);
+        }
+
+        // Function to send message to backend
+        async function sendMessage() {
+            if (!chatInput || !logBtn) {
+                console.error('Chat input or button not found');
+                return;
+            }
+            
             const message = chatInput.value.trim();
             if (!message) {
                 return;
             }
 
-            // Add user message (grey bubble)
-            appendMessage(message, 'user');
-            chatInput.value = '';
+            if (!currentUser?.username) {
+                appendMessage('Please log in again.', 'bot');
+                return;
+            }
 
-            // Simulate bot response after 1 second (blue bubble)
-            setTimeout(() => {
-                appendMessage('I\'ve logged that for you! Anything else?', 'bot');
-            }, 1000);
+            // Add user message to chat
+            appendMessage(message, 'user');
+            chatHistory.push({ role: 'user', content: message });
+            
+            const messageToSend = message;
+            chatInput.value = '';
+            logBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/calories/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: messageToSend,
+                        username: currentUser.username,
+                        history: chatHistory
+                    })
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Failed to process message';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('Response data:', data); // Debug log
+                } catch (e) {
+                    console.error('Failed to parse JSON response:', e);
+                    throw new Error('Invalid response from server');
+                }
+                
+                // Add bot reply to chat
+                const replyText = data.reply || 'I\'ve logged that for you!';
+                appendMessage(replyText, 'bot');
+                chatHistory.push({ role: 'assistant', content: replyText });
+                
+                // If food data is returned, add it to the feed and update macros
+                if (data.food_data) {
+                    console.log('Food data received:', data.food_data); // Debug log
+                    try {
+                        addFoodItem(data.food_data);
+                        updateMacros(data.food_data);
+                        console.log('Successfully updated feed and macros'); // Debug log
+                    } catch (err) {
+                        console.error('Error updating feed/macros:', err);
+                    }
+                } else {
+                    console.log('No food_data in response. Nutrition result may not be ready yet.'); // Debug log
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMessage = error.message || 'Sorry, there was an error. Please try again.';
+                appendMessage(`Error: ${errorMessage}`, 'bot');
+            } finally {
+                logBtn.disabled = false;
+                chatInput.focus();
+            }
         }
 
-        logBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendMessage();
+        // Function to load today's existing logs
+        async function loadTodayLogs() {
+            if (!currentUser?.id) {
+                return;
             }
+            
+            try {
+                const response = await fetch(`/api/calories/logs/${currentUser.id}/today`);
+                if (!response.ok) {
+                    return;
+                }
+                
+                const data = await response.json();
+                const logs = data.logs || [];
+                
+                // Add each log to the feed and update macros
+                if (logs.length > 0) {
+                    logs.forEach(log => {
+                        if (log.calories && log.description) {
+                            const foodItem = {
+                                name: log.description,
+                                calories: log.calories || 0,
+                                protein: log.protein_g || 0,
+                                carbs: log.carbs_g || 0,
+                                fat: log.fat_g || 0
+                            };
+                            addFoodItem(foodItem);
+                            updateMacros(foodItem);
+                        }
+                    });
+                    appendMessage(`Loaded ${logs.length} food item(s) from today!`, 'bot');
+                } else {
+                    console.log('No logs found for today');
+                }
+            } catch (error) {
+                console.error('Failed to load today\'s logs:', error);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get DOM elements
+            chatWindow = document.querySelector('.calories-chat-window');
+            chatInput = document.querySelector('.calories-chat-input');
+            logBtn = document.querySelector('.log-btn');
+            foodFeed = document.getElementById('food-feed');
+            
+            // Check if elements exist
+            if (!chatWindow || !chatInput || !logBtn || !foodFeed) {
+                console.error('Missing DOM elements:', {
+                    chatWindow: !!chatWindow,
+                    chatInput: !!chatInput,
+                    logBtn: !!logBtn,
+                    foodFeed: !!foodFeed
+                });
+                return;
+            }
+            
+            // Initialize current date
+            currentDate = getTodayDate();
+            updateDateDisplay();
+            
+            // Check for date reset
+            checkDateReset();
+            
+            // Add welcome message
+            appendMessage('Hi! I\'m your AI Nutrition Coach. Tell me what you ate and I\'ll log it for you!', 'bot');
+            
+            // Set up event listeners
+            logBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Load existing logs
+            loadTodayLogs();
+            
+            // Check for date change every minute (in case user keeps page open past midnight)
+            setInterval(checkDateReset, 60000); // Check every minute
         });
    </script>
 </body>

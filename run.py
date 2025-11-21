@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from app.api.auth_routes import register_auth_routes
 from app.api.tdee_routes import register_tdee_routes
 from app.api.food_feed_routes import register_food_feed_routes
+from app.api.calories_routes import register_calories_routes
 
 
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -27,6 +28,10 @@ def dashboard_page():
 def tdee_page():
     return render_template("tdee.html")
 
+@app.route("/calories")
+def calories_page():
+    return render_template("calories.html")
+
 @app.route("/forgot-password")
 def forgot_password_page():
     return render_template("forgot_password.html")
@@ -37,6 +42,7 @@ def forgot_password_page():
 register_auth_routes(app)
 register_tdee_routes(app)
 register_food_feed_routes(app)
+register_calories_routes(app)
 
 
 

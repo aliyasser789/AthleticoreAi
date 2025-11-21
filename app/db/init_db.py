@@ -88,6 +88,23 @@ def create_tables(conn):
         """
     )
 
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS calorie_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        entry_date TEXT NOT NULL,
+        description TEXT,
+        calories REAL,
+        protein_g REAL,
+        carbs_g REAL,
+        fat_g REAL,
+        created_at TEXT NOT NULL,
+        is_deleted INTEGER DEFAULT 0,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """
+    )
+
     conn.commit()
 
 
