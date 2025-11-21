@@ -19,3 +19,11 @@ def fetch_one(query, params=()):
     row = cursor.fetchone()
     conn.close()
     return row
+
+def fetch_all(query, params=()):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows

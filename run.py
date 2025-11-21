@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from app.api.auth_routes import register_auth_routes
+from app.api.tdee_routes import register_tdee_routes
 
 
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -21,6 +22,10 @@ def register_page():
 def dashboard_page():
     return render_template("dashboard.html")
 
+@app.route("/tdee")
+def tdee_page():
+    return render_template("tdee.html")
+
 @app.route("/forgot-password")
 def forgot_password_page():
     return render_template("forgot_password.html")
@@ -29,6 +34,7 @@ def forgot_password_page():
 
 # Register routes from other files
 register_auth_routes(app)
+register_tdee_routes(app)
 
 
 

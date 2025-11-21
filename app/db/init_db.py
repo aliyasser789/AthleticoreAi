@@ -31,7 +31,33 @@ def create_tables(conn):
        """
     )
 
-    
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS tdee_profile (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        activity_level TEXT NOT NULL,
+        tdee_value REAL NOT NULL,
+        goal_type TEXT NOT NULL,
+        goal_offset INTEGER NOT NULL,
+        goal_calories REAL NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """
+    )
+
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS tdee_chat (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tdee_profile_id INTEGER NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (tdee_profile_id) REFERENCES tdee_profile(id) ON DELETE CASCADE
+        );
+        """
+    )
 
     conn.commit()
 
