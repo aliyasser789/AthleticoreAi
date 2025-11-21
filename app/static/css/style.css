@@ -481,3 +481,196 @@ select:focus {
     border-color: #00A8FF;
     outline: none;
 }
+
+/* --- CALORIES PAGE STYLES --- */
+
+/* Tracker Container: Split-screen layout */
+.tracker-container {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+}
+
+/* Left Column: Daily Log Section */
+.log-section {
+    width: 40%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Macro Summary Row */
+.macro-summary {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.macro-box {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+}
+
+.macro-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.macro-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+}
+
+/* Food Feed: Scrollable list */
+.food-feed {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar for food feed */
+.food-feed::-webkit-scrollbar {
+    width: 6px;
+}
+
+.food-feed::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.food-feed::-webkit-scrollbar-thumb {
+    background: #00A8FF;
+    border-radius: 10px;
+}
+
+.food-feed::-webkit-scrollbar-thumb:hover {
+    background: #008ecf;
+}
+
+/* Food Item */
+.food-item {
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 3px solid #00A8FF;
+    border-radius: 8px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.food-item:hover {
+    background: rgba(0, 0, 0, 0.6);
+    border-left-color: #008ecf;
+    transform: translateX(5px);
+}
+
+.food-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.food-calories {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    color: #00A8FF;
+    font-weight: 600;
+}
+
+/* Right Column: Chat Section */
+.calories-chat {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    overflow: hidden;
+}
+
+.calories-chat-window {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 400px;
+}
+
+/* Chat Input Area */
+.calories-chat-input {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+}
+
+.calories-chat-input:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.calories-chat-input::placeholder {
+    color: #888;
+}
+
+.log-btn {
+    width: 100px;
+    background: #00A8FF;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.log-btn:hover {
+    background: #008ecf;
+    box-shadow: 0 0 15px rgba(0, 168, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.log-btn:active {
+    transform: translateY(0);
+}

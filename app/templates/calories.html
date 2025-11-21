@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athleticore Calories</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+   <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
+            <li><a href="/calories" class="active">Calories</a></li>
+            <li><a href="#">Workout</a></li>
+            <li><a href="#">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+   </nav>
+   <main class="main-content">
+        <div class="tracker-container">
+            <!-- LEFT COLUMN: Daily Log -->
+            <div class="log-section">
+                <h2 class="section-title">Daily Log</h2>
+                
+                <!-- Macro Summary Row -->
+                <div class="macro-summary">
+                    <div class="macro-box">
+                        <div class="macro-label">Protein</div>
+                        <div class="macro-value">120g</div>
+                    </div>
+                    <div class="macro-box">
+                        <div class="macro-label">Carbs</div>
+                        <div class="macro-value">250g</div>
+                    </div>
+                    <div class="macro-box">
+                        <div class="macro-label">Fats</div>
+                        <div class="macro-value">65g</div>
+                    </div>
+                </div>
+
+                <!-- Food Items Feed -->
+                <div class="food-feed">
+                    <div class="food-item">
+                        <div class="food-name">Oatmeal</div>
+                        <div class="food-calories">350 kcal</div>
+                    </div>
+                    <div class="food-item">
+                        <div class="food-name">Chicken Breast</div>
+                        <div class="food-calories">231 kcal</div>
+                    </div>
+                    <div class="food-item">
+                        <div class="food-name">Brown Rice</div>
+                        <div class="food-calories">216 kcal</div>
+                    </div>
+                    <div class="food-item">
+                        <div class="food-name">Broccoli</div>
+                        <div class="food-calories">55 kcal</div>
+                    </div>
+                    <div class="food-item">
+                        <div class="food-name">Protein Shake</div>
+                        <div class="food-calories">120 kcal</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: AI Chat Interface -->
+            <div class="chat-section calories-chat">
+                <h2 class="section-title">AI Nutrition Coach</h2>
+                <div class="chat-window calories-chat-window"></div>
+                <div class="chat-input-area">
+                    <input type="text" placeholder="Type a message..." class="chat-input calories-chat-input" autocomplete="off">
+                    <button type="button" class="log-btn">Log</button>
+                </div>
+            </div>
+        </div>
+   </main>
+   <script>
+        const chatWindow = document.querySelector('.calories-chat-window');
+        const chatInput = document.querySelector('.calories-chat-input');
+        const logBtn = document.querySelector('.log-btn');
+
+        function appendMessage(text, role = 'bot') {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message', role === 'user' ? 'user-msg' : 'bot-msg');
+            messageEl.textContent = text;
+            chatWindow.appendChild(messageEl);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) {
+                return;
+            }
+
+            // Add user message (grey bubble)
+            appendMessage(message, 'user');
+            chatInput.value = '';
+
+            // Simulate bot response after 1 second (blue bubble)
+            setTimeout(() => {
+                appendMessage('I\'ve logged that for you! Anything else?', 'bot');
+            }, 1000);
+        }
+
+        logBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+   </script>
+</body>
+</html>
+
