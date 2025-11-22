@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Workout Log - Athleticore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+   <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
+            <li><a href="/calories">Calories</a></li>
+            <li><a href="/workout" class="active">Workout</a></li>
+            <li><a href="#">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+   </nav>
+   <main class="main-content">
+        <h2 class="section-title">Create Workout Log</h2>
+        
+        <div class="create-log-container">
+            <form id="workout-log-form">
+                <!-- Form Header -->
+                <div class="form-header">
+                    <div class="form-group">
+                        <label for="log-name" class="form-label">Log Name</label>
+                        <input type="text" id="log-name" name="log-name" class="form-input large-input" placeholder="e.g., Chest Day" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="day-of-week" class="form-label">Day of Week</label>
+                        <select id="day-of-week" name="day-of-week" class="form-input" required>
+                            <option value="">Select Day</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Exercise Entry Container -->
+                <div class="exercises-section">
+                    <h3 class="section-subtitle">Exercises</h3>
+                    <div id="exercises-list">
+                        <!-- First exercise entry -->
+                        <div class="exercise-entry">
+                            <button type="button" class="remove-exercise" onclick="removeExercise(this)">×</button>
+                            <div class="form-group">
+                                <label class="form-label">Exercise Name</label>
+                                <input type="text" class="form-input" name="exercise-name" placeholder="e.g., Bench Press" required>
+                            </div>
+                            
+                            <div class="inline-inputs">
+                                <div class="input-group">
+                                    <label class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-input small-input" name="weight" placeholder="0" min="0" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <label class="form-label">Prev Weight (kg)</label>
+                                    <input type="number" class="form-input small-input" name="prev-weight" placeholder="0" min="0" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <label class="form-label">Reps</label>
+                                    <input type="number" class="form-input small-input" name="reps" placeholder="0" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <label class="form-label">Sets</label>
+                                    <input type="number" class="form-input small-input" name="sets" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-input form-textarea" name="notes" placeholder="Add any notes about this exercise..." rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Exercise Button -->
+                    <button type="button" class="add-exercise-btn" onclick="addExerciseField()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Save Button -->
+                <button type="submit" class="save-log-btn">Save Log</button>
+            </form>
+        </div>
+   </main>
+   <script>
+        // Function to remove an exercise field
+        function removeExercise(btn) {
+            const exerciseEntry = btn.closest('.exercise-entry');
+            if (exerciseEntry) {
+                exerciseEntry.remove();
+            }
+        }
+
+        // Function to add a new exercise field
+        function addExerciseField() {
+            const exercisesList = document.getElementById('exercises-list');
+            const newExercise = document.createElement('div');
+            newExercise.className = 'exercise-entry';
+            
+            newExercise.innerHTML = `
+                <button type="button" class="remove-exercise" onclick="removeExercise(this)">×</button>
+                <div class="form-group">
+                    <label class="form-label">Exercise Name</label>
+                    <input type="text" class="form-input" name="exercise-name" placeholder="e.g., Bench Press" required>
+                </div>
+                
+                <div class="inline-inputs">
+                    <div class="input-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" class="form-input small-input" name="weight" placeholder="0" min="0" step="0.5">
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label">Prev Weight (kg)</label>
+                        <input type="number" class="form-input small-input" name="prev-weight" placeholder="0" min="0" step="0.5">
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label">Reps</label>
+                        <input type="number" class="form-input small-input" name="reps" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label class="form-label">Sets</label>
+                        <input type="number" class="form-input small-input" name="sets" placeholder="0" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-input form-textarea" name="notes" placeholder="Add any notes about this exercise..." rows="3"></textarea>
+                </div>
+            `;
+            
+            exercisesList.appendChild(newExercise);
+        }
+
+        // Handle form submission
+        document.getElementById('workout-log-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const logName = document.getElementById('log-name').value;
+            const dayOfWeek = document.getElementById('day-of-week').value;
+            
+            // Collect all exercises
+            const exerciseEntries = document.querySelectorAll('.exercise-entry');
+            const exercises = [];
+            
+            exerciseEntries.forEach(entry => {
+                const exerciseName = entry.querySelector('input[name="exercise-name"]').value;
+                const weight = entry.querySelector('input[name="weight"]').value;
+                const prevWeight = entry.querySelector('input[name="prev-weight"]').value;
+                const reps = entry.querySelector('input[name="reps"]').value;
+                const sets = entry.querySelector('input[name="sets"]').value;
+                const notes = entry.querySelector('textarea[name="notes"]').value;
+                
+                if (exerciseName) { // Only add if exercise name is provided
+                    exercises.push({
+                        name: exerciseName,
+                        weight_kg: weight ? parseFloat(weight) : null,
+                        prev_weight: prevWeight ? parseFloat(prevWeight) : null,
+                        reps: reps ? parseInt(reps) : null,
+                        sets: sets ? parseInt(sets) : null,
+                        notes: notes || null
+                    });
+                }
+            });
+            
+            // Build final JSON object
+            const workoutLog = {
+                log_name: logName,
+                day: dayOfWeek,
+                exercises: exercises
+            };
+            
+            // Console log for debugging (ready for backend connection)
+            console.log('Workout Log Data:', JSON.stringify(workoutLog, null, 2));
+            
+            // TODO: Send to backend API
+            // For now, redirect back to workout page
+            window.location.href = 'workout.html';
+        });
+   </script>
+</body>
+</html>
+

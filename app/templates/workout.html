@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athleticore Workout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+   <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
+            <li><a href="/calories">Calories</a></li>
+            <li><a href="/workout" class="active">Workout</a></li>
+            <li><a href="#">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+   </nav>
+   <main class="main-content">
+        <h2 class="section-title">Workout Log</h2>
+        
+        <div class="workout-log-container">
+            <!-- Empty State (hidden by default) -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <p>You don't have any logs yet.</p>
+            </div>
+
+            <!-- Feed Container -->
+            <div class="workout-feed-container" id="workout-feed">
+                <!-- Log cards will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Fixed Create Log Button -->
+        <a href="create_log.html" class="create-btn">Create Log</a>
+   </main>
+   <script>
+
+        // Get current day of week
+        function getCurrentDay() {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[new Date().getDay()];
+        }
+
+        // Fake logs array with detailed data
+        const fakeLogs = [
+            { 
+                day: "Monday", 
+                summary: "Chest",
+                weight_kg: 80,
+                prev_weight: 75,
+                reps: 12,
+                sets: 4,
+                notes: "Great session! Increased weight by 5kg. Felt strong throughout."
+            },
+            { 
+                day: "Thursday", 
+                summary: "Back",
+                weight_kg: 100,
+                prev_weight: 95,
+                reps: 10,
+                sets: 4,
+                notes: "Focus on form. Pull-ups felt easier today."
+            },
+            { 
+                day: getCurrentDay(), 
+                summary: "Legs",
+                weight_kg: 120,
+                prev_weight: 115,
+                reps: 8,
+                sets: 5,
+                notes: "Leg day complete! Squats were challenging but manageable."
+            }
+        ];
+
+        // DOM elements
+        const emptyState = document.getElementById('empty-state');
+        const workoutFeed = document.getElementById('workout-feed');
+        const currentDay = getCurrentDay();
+
+        // Function to create a log card
+        function createLogCard(log, isToday = false) {
+            const card = document.createElement('div');
+            card.className = 'log-card';
+            
+            if (isToday) {
+                card.classList.add('today-highlight');
+            }
+
+            // Get day abbreviation (first 3 letters, uppercase)
+            const dayAbbr = log.day.substring(0, 3).toUpperCase();
+
+            // Store full log data as JSON in data attribute
+            const logData = JSON.stringify(log);
+            card.setAttribute('data-log', logData);
+
+            card.innerHTML = `
+                <div class="day-badge">${dayAbbr}</div>
+                <div class="log-summary">${log.summary}</div>
+                <button class="details-btn" onclick="openDetailsModalFromCard(this)">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <button class="delete-log-btn" onclick="deleteLog(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            // Store log data as data attribute for deletion
+            card.setAttribute('data-day', log.day);
+            card.setAttribute('data-summary', log.summary);
+
+            return card;
+        }
+
+        // Function to delete a log
+        function deleteLog(btn) {
+            const card = btn.closest('.log-card');
+            if (!card) return;
+
+            // Get log data from card
+            const day = card.getAttribute('data-day');
+            const summary = card.getAttribute('data-summary');
+
+            // Apply fade-out animation
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(100px)';
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+            // Remove from fakeLogs array
+            const index = fakeLogs.findIndex(log => log.day === day && log.summary === summary);
+            if (index > -1) {
+                fakeLogs.splice(index, 1);
+            }
+
+            // Remove from DOM after animation
+            setTimeout(() => {
+                card.remove();
+                
+                // Check if feed is empty
+                if (fakeLogs.length === 0) {
+                    emptyState.style.display = 'block';
+                    workoutFeed.style.display = 'none';
+                }
+            }, 300);
+        }
+
+        // Function to render logs
+        function renderLogs() {
+            // Clear existing content
+            workoutFeed.innerHTML = '';
+
+            // If no logs, show empty state
+            if (fakeLogs.length === 0) {
+                emptyState.style.display = 'block';
+                workoutFeed.style.display = 'none';
+                return;
+            }
+
+            // Hide empty state
+            emptyState.style.display = 'none';
+            workoutFeed.style.display = 'block';
+
+            // Sort logs: today's log first, then others
+            const sortedLogs = [...fakeLogs].sort((a, b) => {
+                if (a.day === currentDay) return -1;
+                if (b.day === currentDay) return 1;
+                return 0;
+            });
+
+            // Render each log
+            sortedLogs.forEach(log => {
+                const isToday = log.day === currentDay;
+                const card = createLogCard(log, isToday);
+                workoutFeed.appendChild(card);
+            });
+        }
+
+        // Function to open details modal from card button
+        function openDetailsModalFromCard(btn) {
+            const card = btn.closest('.log-card');
+            if (!card) return;
+
+            const logDataStr = card.getAttribute('data-log');
+            if (!logDataStr) return;
+
+            try {
+                const log = JSON.parse(logDataStr);
+                openDetailsModal(log);
+            } catch (e) {
+                console.error('Failed to parse log data:', e);
+            }
+        }
+
+        // Function to open details modal
+        function openDetailsModal(log) {
+            const modal = document.getElementById('details-modal');
+            if (!modal) return;
+
+            // Populate modal with log data
+            document.getElementById('modal-day').textContent = log.day || 'N/A';
+            document.getElementById('modal-summary').textContent = log.summary || 'N/A';
+            document.getElementById('modal-weight').textContent = log.weight_kg || 'N/A';
+            document.getElementById('modal-prev-weight').textContent = log.prev_weight || 'N/A';
+            document.getElementById('modal-sets').textContent = log.sets || 'N/A';
+            document.getElementById('modal-reps').textContent = log.reps || 'N/A';
+            document.getElementById('modal-notes').textContent = log.notes || 'No notes available.';
+
+            // Show modal
+            modal.style.display = 'flex';
+        }
+
+        // Function to close details modal
+        function closeDetailsModal() {
+            const modal = document.getElementById('details-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal when clicking outside (on overlay)
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('details-modal');
+            const overlay = modal ? modal.querySelector('.modal-overlay') : null;
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    closeDetailsModal();
+                });
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLogs();
+        });
+   </script>
+
+   <!-- Details Modal -->
+   <div id="details-modal" class="details-modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Workout Details</h2>
+                <button class="modal-close-btn" onclick="closeDetailsModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <div class="modal-label">Day</div>
+                        <div class="modal-value" id="modal-day">-</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-label">Workout</div>
+                        <div class="modal-value" id="modal-summary">-</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-label">Weight (kg)</div>
+                        <div class="modal-value" id="modal-weight">-</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-label">Previous Weight (kg)</div>
+                        <div class="modal-value" id="modal-prev-weight">-</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-label">Sets</div>
+                        <div class="modal-value" id="modal-sets">-</div>
+                    </div>
+                    <div class="modal-info-item">
+                        <div class="modal-label">Reps</div>
+                        <div class="modal-value" id="modal-reps">-</div>
+                    </div>
+                </div>
+                <div class="modal-notes-section">
+                    <div class="modal-label">Notes</div>
+                    <div class="modal-notes-text" id="modal-notes">-</div>
+                </div>
+            </div>
+        </div>
+   </div>
+</body>
+</html>

@@ -147,6 +147,11 @@ button:hover {
     color: white;
 }
 
+.hero-text {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+}
 
 .hero-text h1 {
     font-family: 'Orbitron', sans-serif; /* The Cyberpunk Font */
@@ -384,9 +389,11 @@ button:hover {
 .section-title {
     font-family: 'Orbitron', sans-serif;
     color: #00A8FF !important;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
     font-size: 24px;
     text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+    max-width: 800px;
+    text-align: left;
 }
 
 .date-display {
@@ -835,4 +842,595 @@ select:focus {
 .log-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Workout History Feed Styles */
+.workout-log-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 40px;
+    margin-bottom: 100px; /* Space for fixed button */
+}
+
+.workout-feed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.log-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+}
+
+.log-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    box-shadow: 0 0 15px rgba(0, 168, 255, 0.2);
+}
+
+.log-card.today-highlight {
+    border: 2px solid #00A8FF;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.4);
+    background: rgba(0, 168, 255, 0.1);
+    order: -1; /* Force to top using CSS order */
+}
+
+.day-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+    min-width: 80px;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+.log-card.today-highlight .day-badge {
+    color: #00A8FF;
+    text-shadow: 0 0 15px rgba(0, 168, 255, 0.8);
+}
+
+.log-summary {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+}
+
+.delete-log-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ff4444;
+    background: transparent;
+    color: #ff4444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.delete-log-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: #ff0000;
+    color: #ff0000;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.delete-log-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.delete-log-btn i {
+    font-size: 14px;
+}
+
+.log-card:hover .delete-log-btn {
+    opacity: 1;
+}
+
+.details-btn {
+    position: absolute;
+    right: 55px; /* Position to the left of delete button (32px button + 15px right + 8px gap) */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #00A8FF;
+    background: transparent;
+    color: #00A8FF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.details-btn:hover {
+    background: rgba(0, 168, 255, 0.1);
+    border-color: #00A8FF;
+    color: #00A8FF;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.details-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.details-btn i {
+    font-size: 14px;
+}
+
+.log-card:hover .details-btn {
+    opacity: 1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    color: #888;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.empty-state p {
+    margin: 0;
+}
+
+.create-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 50px;
+    background: #00A8FF;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 15px 40px;
+    border-radius: 50px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.4);
+    z-index: 1000;
+    display: inline-block;
+}
+
+.create-btn:hover {
+    background: #008ecf;
+    box-shadow: 0 0 30px rgba(0, 168, 255, 0.6);
+    transform: translateY(-3px);
+}
+
+.create-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Details Modal Styles */
+.details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 40px;
+    z-index: 2001;
+    box-shadow: 0 0 50px rgba(0, 168, 255, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+    margin: 0;
+}
+
+.modal-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+    border-color: #ff4444;
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
+    transform: scale(1.1);
+}
+
+.modal-close-btn i {
+    font-size: 16px;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.modal-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.modal-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+}
+
+.modal-notes-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.modal-notes-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    line-height: 1.6;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    min-height: 80px;
+}
+
+/* Custom scrollbar for modal */
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #00A8FF;
+    border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #008ecf;
+}
+
+/* Create Log Form Styles */
+.create-log-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    padding: 40px;
+    margin-bottom: 50px;
+}
+
+.form-header {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.form-header .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-header .form-group input,
+.form-header .form-group select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-header .form-group select.form-input {
+    font-size: 18px;
+    padding: 15px 20px;
+    padding-right: 40px; /* Keep space for dropdown arrow */
+    font-weight: 600;
+    background-position: right 20px center; /* Adjust arrow position for larger padding */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.form-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+    background: #1a1a1a;
+}
+
+.form-input::placeholder {
+    color: #555;
+}
+
+.form-input.large-input {
+    font-size: 18px;
+    padding: 15px 20px;
+    font-weight: 600;
+}
+
+.form-input.small-input {
+    padding: 10px 12px;
+    font-size: 14px;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+}
+
+select.form-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300A8FF' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    padding-right: 40px;
+}
+
+select.form-input option {
+    background: #111;
+    color: #fff;
+}
+
+.section-subtitle {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: #00A8FF;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.exercises-section {
+    margin-bottom: 30px;
+}
+
+.exercise-entry {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.exercise-entry:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.remove-exercise {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease-in-out;
+    z-index: 10;
+    line-height: 1;
+    padding: 0;
+}
+
+.remove-exercise:hover {
+    background: #ff2222;
+    transform: scale(1.1);
+}
+
+.inline-inputs {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.inline-inputs .input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inline-inputs .input-group .form-label {
+    font-size: 11px;
+    white-space: nowrap;
+    min-height: 18px;
+}
+
+.inline-inputs .input-group input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.add-exercise-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(0, 168, 255, 0.1);
+    border: 2px solid #00A8FF;
+    color: #00A8FF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto;
+    transition: all 0.3s ease;
+    font-size: 20px;
+}
+
+.add-exercise-btn:hover {
+    background: rgba(0, 168, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.4);
+}
+
+.add-exercise-btn:active {
+    transform: scale(0.95);
+}
+
+.save-log-btn {
+    width: 100%;
+    background: #00A8FF;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 18px 40px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.4);
+    margin-top: 20px;
+}
+
+.save-log-btn:hover {
+    background: #008ecf;
+    box-shadow: 0 0 30px rgba(0, 168, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.save-log-btn:active {
+    transform: translateY(0);
 }
