@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date, date
 
 @dataclass
-class CalorieLog:
-    # Required fields (no defaults) must come first
+class CalorieLog:# name of the class is CalorieLog
+    #data fields of the class
     id: Optional[int]
     user_id: int
     entry_date: str
     created_at: str
-    # Optional fields (with defaults) come after
+    # Optional fields mumken yethato aw la'
     description: Optional[str] = None
     calories: Optional[float] = None
     protein_g: Optional[float] = None
@@ -19,10 +19,7 @@ class CalorieLog:
     @classmethod
     def from_row(cls, row: tuple) -> "CalorieLog":
         """
-        row must come from:
-        SELECT * FROM calorie_logs
-        with columns in this exact order:
-        id, user_id, entry_date, description, calories, protein_g, carbs_g, fat_g, created_at, is_deleted
+        method that creates a CalorieLog object from a database row
         """
         return cls(
             id=row[0],
@@ -51,5 +48,11 @@ class CalorieLog:
             "is_deleted": self.is_deleted,
         }
     @staticmethod
+    #for timestamp
     def now_iso() -> str:
         return datetime.utcnow().isoformat()
+    
+    @staticmethod
+    #for today's date
+    def today_iso() -> str:
+        return date.today().isoformat()

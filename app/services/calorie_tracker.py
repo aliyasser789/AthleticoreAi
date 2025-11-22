@@ -1,11 +1,11 @@
 from app.models.calorie_entry import CalorieLog
 from app.db import db_helper
 from typing import Optional, List
-from datetime import date
 
 
 class Calorie_manager:
     @staticmethod
+    #hanadeh men el route haolo add log with these parameters
     def add_log(
         user_id: int,
         description: Optional[str],
@@ -15,9 +15,9 @@ class Calorie_manager:
         fat_g: Optional[float],
         entry_date: Optional[str] = None,
     ) -> CalorieLog:
-        # 1) Default entry_date = today
+        # lesa baamel entry date lw log gededa 
         if entry_date is None:
-            entry_date = date.today().isoformat()
+            entry_date = CalorieLog.today_iso()
 
         # 2) Generate created_at timestamp
         created_at = CalorieLog.now_iso()
@@ -85,7 +85,7 @@ class Calorie_manager:
     @staticmethod
     def get_today_logs(user_id: int) -> List[CalorieLog]:
         """Get all calorie logs for today."""
-        today = date.today().isoformat()
+        today = CalorieLog.today_iso()
         return Calorie_manager.get_logs(user_id, today)
 
     @staticmethod
@@ -109,35 +109,64 @@ class Calorie_manager:
         fat_g: Optional[float] = None,
     ) -> Optional[CalorieLog]:
         """Update a calorie log entry."""
-        # Build update query dynamically based on provided fields
-        updates = []
-        params = []
+        # Step 1: Check which fields the user wants to update
+        # Only include fields that are not None (meaning user provided a value)
+        fields_to_update = {}
         
         if description is not None:
-            updates.append("description = ?")
-            params.append(description)
+            fields_to_update["description"] = description
         if calories is not None:
-            updates.append("calories = ?")
-            params.append(calories)
+            fields_to_update["calories"] = calories
         if protein_g is not None:
-            updates.append("protein_g = ?")
-            params.append(protein_g)
+            fields_to_update["protein_g"] = protein_g
         if carbs_g is not None:
-            updates.append("carbs_g = ?")
-            params.append(carbs_g)
+            fields_to_update["carbs_g"] = carbs_g
         if fat_g is not None:
-            updates.append("fat_g = ?")
-            params.append(fat_g)
+            fields_to_update["fat_g"] = fat_g
         
-        if not updates:
+        # Step 2: If user didn't provide any fields to update, just return the current log
+        if len(fields_to_update) == 0:
             return Calorie_manager.get_log_by_id(log_id)
         
-        params.append(log_id)
-        query = f"UPDATE calorie_logs SET {', '.join(updates)} WHERE id = ? AND is_deleted = 0"
+        # Step 3: Build two lists - one for SQL parts, one for values
+        sql_parts = []
+        values = []
         
-        db_helper.execute_query(query, tuple(params))
+        # Step 4: Go through each field we want to update
+        for field_name in fields_to_update:
+            # Create SQL part like "description = ?"
+            sql_part = field_name + " = ?"
+            sql_parts.append(sql_part)
+            
+            # Get the actual value (like "Chicken" or 231.0)
+            field_value = fields_to_update[field_name]
+            values.append(field_value)
         
-        return Calorie_manager.get_log_by_id(log_id)
+        # Step 5: Add the log_id at the end (needed for WHERE id = ?)
+        values.append(log_id)
+        
+        # Step 6: Join all SQL parts with commas
+        # If sql_parts = ["description = ?", "calories = ?"]
+        # Then sql_set_clause = "description = ?, calories = ?"
+        sql_set_clause = ", ".join(sql_parts)
+        
+        # Step 7: Build the complete SQL query
+        # Start with "UPDATE calorie_logs SET "
+        query_start = "UPDATE calorie_logs SET "
+        # Add our SQL parts: "description = ?, calories = ?"
+        query_middle = sql_set_clause
+        # Add the WHERE part: " WHERE id = ? AND is_deleted = 0"
+        query_end = " WHERE id = ? AND is_deleted = 0"
+        # Combine all parts
+        complete_query = query_start + query_middle + query_end
+        
+        # Step 8: Convert values list to tuple and execute query
+        values_tuple = tuple(values)
+        db_helper.execute_query(complete_query, values_tuple)
+        
+        # Step 9: Get and return the updated log
+        updated_log = Calorie_manager.get_log_by_id(log_id)
+        return updated_log
 
     @staticmethod
     def delete_log(log_id: int) -> bool:
