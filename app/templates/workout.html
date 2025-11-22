@@ -269,6 +269,9 @@
             const workout = workoutItem.workout;
             const exercises = workoutItem.exercises || [];
             
+            // Store workout ID in modal dataset
+            modal.dataset.workoutId = workout.id;
+            
             // Format date to day of week
             const day = formatDateToDay(workout.date);
             
@@ -301,10 +304,13 @@
             const block = document.createElement('div');
             block.className = 'exercise-modal-block';
             block.setAttribute('data-exercise-index', index);
+            if (exercise.id) {
+                block.setAttribute('data-exercise-id', exercise.id);
+            }
             
             block.innerHTML = `
                 <div class="exercise-header-editable">
-                    <input type="text" class="exercise-name-input" value="${exercise.exercise_name || ''}" placeholder="Exercise Name">
+                    <input type="text" class="exercise-name-input" data-field="exercise-name" value="${exercise.exercise_name || ''}" placeholder="Exercise Name">
                     <i class="fas fa-pen edit-icon"></i>
                 </div>
                 
@@ -312,16 +318,16 @@
                     <div class="stat-group">
                         <label class="stat-label">Reps</label>
                         <div class="old-new-inputs">
-                            <input type="number" class="stat-input old-value" value="${exercise.previous_reps || ''}" placeholder="Old" min="0">
-                            <input type="number" class="stat-input new-value" value="${exercise.reps || ''}" placeholder="New" min="0">
+                            <input type="number" class="stat-input old-value" data-field="reps-old" value="" placeholder="Old" min="0">
+                            <input type="number" class="stat-input new-value" data-field="reps-new" value="${exercise.reps || ''}" placeholder="New" min="0">
                         </div>
                     </div>
                     
                     <div class="stat-group">
                         <label class="stat-label">Sets</label>
                         <div class="old-new-inputs">
-                            <input type="number" class="stat-input old-value" value="${exercise.previous_sets || ''}" placeholder="Old" min="0">
-                            <input type="number" class="stat-input new-value" value="${exercise.sets || ''}" placeholder="New" min="0">
+                            <input type="number" class="stat-input old-value" data-field="sets-old" value="" placeholder="Old" min="0">
+                            <input type="number" class="stat-input new-value" data-field="sets-new" value="${exercise.sets || ''}" placeholder="New" min="0">
                         </div>
                     </div>
                 </div>
@@ -330,7 +336,7 @@
                     <div class="weight-group">
                         <label class="weight-label">Weight (KG)</label>
                         <div class="weight-input-wrapper">
-                            <input type="number" class="weight-input" value="${exercise.weight_kg || ''}" placeholder="0" min="0" step="0.5">
+                            <input type="number" class="weight-input" data-field="weight" value="${exercise.weight_kg || ''}" placeholder="0" min="0" step="0.5">
                             <i class="fas fa-pen edit-icon"></i>
                         </div>
                     </div>
@@ -338,7 +344,7 @@
                     <div class="weight-group">
                         <label class="weight-label">Previous Weight (KG)</label>
                         <div class="weight-input-wrapper">
-                            <input type="number" class="weight-input" value="${exercise.previous_weight || ''}" placeholder="0" min="0" step="0.5">
+                            <input type="number" class="weight-input" data-field="prev-weight" value="${exercise.previous_weight || ''}" placeholder="0" min="0" step="0.5">
                             <i class="fas fa-pen edit-icon"></i>
                         </div>
                     </div>
@@ -346,7 +352,7 @@
                 
                 <div class="exercise-notes-group">
                     <label class="exercise-notes-label">Notes</label>
-                    <textarea class="exercise-notes-textarea" placeholder="Add notes about this exercise...">${exercise.notes || ''}</textarea>
+                    <textarea class="exercise-notes-textarea" data-field="exercise-notes" placeholder="Add notes about this exercise...">${exercise.notes || ''}</textarea>
                 </div>
             `;
             
@@ -417,9 +423,139 @@
             }
         }
 
+        // Function to save workout changes
+        async function saveWorkoutChanges() {
+            const modal = document.getElementById('details-modal');
+            if (!modal) return;
+            
+            const workoutId = modal.dataset.workoutId;
+            if (!workoutId) {
+                showToast('Workout ID not found', 'error');
+                return;
+            }
+
+            // Get user from localStorage
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                showToast('Please log in first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            let user;
+            try {
+                user = JSON.parse(storedUser);
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+                showToast('Session expired. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            if (!user || !user.id) {
+                showToast('User information not found. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            // Collect workout-level fields
+            const workoutNameInput = document.getElementById('modal-workout-name');
+            const workoutNotesTextarea = document.getElementById('modal-workout-notes');
+
+            const workout_name = workoutNameInput ? workoutNameInput.value.trim() : '';
+            const notes = workoutNotesTextarea ? workoutNotesTextarea.value.trim() : '';
+
+            if (!workout_name) {
+                showToast('Workout name is required', 'error');
+                return;
+            }
+
+            // Collect exercises
+            const exerciseBlocks = document.querySelectorAll('#modal-exercises-list .exercise-modal-block');
+            const exercises = [];
+
+            exerciseBlocks.forEach((block, index) => {
+                const exerciseId = block.dataset.exerciseId || null;
+
+                const nameInput = block.querySelector('[data-field="exercise-name"]');
+                const repsNewInput = block.querySelector('[data-field="reps-new"]');
+                const setsNewInput = block.querySelector('[data-field="sets-new"]');
+                const weightInput = block.querySelector('[data-field="weight"]');
+                const prevWeightInput = block.querySelector('[data-field="prev-weight"]');
+                const notesInput = block.querySelector('[data-field="exercise-notes"]');
+
+                const exercise_name = nameInput ? nameInput.value.trim() : '';
+                if (!exercise_name) {
+                    return; // Skip exercises without names
+                }
+
+                exercises.push({
+                    id: exerciseId ? parseInt(exerciseId) : null,
+                    exercise_name: exercise_name,
+                    reps: repsNewInput ? parseInt(repsNewInput.value || 0) : 0,
+                    sets: setsNewInput ? parseInt(setsNewInput.value || 0) : 0,
+                    weight_kg: weightInput ? parseFloat(weightInput.value || 0) : 0,
+                    previous_weight: prevWeightInput ? parseFloat(prevWeightInput.value || 0) : 0,
+                    notes: notesInput ? notesInput.value.trim() : '',
+                    order_index: index
+                });
+            });
+
+            if (exercises.length === 0) {
+                showToast('At least one exercise is required', 'error');
+                return;
+            }
+
+            const payload = {
+                user_id: user.id,
+                workout_name: workout_name,
+                notes: notes,
+                exercises: exercises
+            };
+
+            try {
+                const response = await fetch(`/api/workouts/${workoutId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to save workout');
+                }
+
+                showToast('Workout updated successfully!', 'success');
+                closeDetailsModal();
+
+                // Refresh workouts list
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            } catch (error) {
+                console.error('Error saving workout:', error);
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             loadWorkouts();
+
+            // Wire up Save button
+            const saveBtn = document.getElementById('modal-save-btn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveWorkoutChanges);
+            }
         });
    </script>
 
@@ -429,8 +565,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-header-left">
-                    <input type="text" id="modal-workout-name" class="modal-workout-name-input" placeholder="Workout Name">
-                    <i class="fas fa-pen edit-icon"></i>
+                    <div class="title-edit-group">
+                        <input type="text" id="modal-workout-name" class="modal-workout-name-input" placeholder="Workout Name">
+                        <i class="fas fa-pen title-edit-icon"></i>
+                    </div>
                 </div>
                 <div class="modal-header-right">
                     <span class="modal-day-badge" id="modal-day">-</span>
@@ -454,6 +592,9 @@
                         <!-- Exercise blocks will be dynamically added here -->
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-save-btn" id="modal-save-btn">Save Changes</button>
             </div>
         </div>
    </div>

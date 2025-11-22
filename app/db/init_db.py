@@ -119,6 +119,18 @@ def create_tables(conn):
     )
 
     cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    sender TEXT NOT NULL,        -- "user" or "ai"
+    message TEXT NOT NULL,       -- the actual chat content
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            """
+    )
+
+    cursor.execute(
         """ CREATE TABLE IF NOT EXISTS workout_exercises (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         workout_id INTEGER NOT NULL,

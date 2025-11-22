@@ -1165,6 +1165,12 @@ select:focus {
     flex: 1;
 }
 
+.title-edit-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px !important;
+}
+
 .modal-workout-name-input {
     background: transparent;
     border: none;
@@ -1173,9 +1179,25 @@ select:focus {
     font-size: 28px;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
     flex: 1;
     min-width: 200px;
+}
+
+.title-edit-icon {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 15px;
+    color: #00c3ff !important;
+    cursor: pointer;
+    transform: translateY(1px);
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.title-edit-icon:hover {
+    opacity: 1;
 }
 
 .modal-workout-name-input:focus {
@@ -1526,6 +1548,42 @@ select:focus {
 
 .modal-content::-webkit-scrollbar-thumb:hover {
     background: #008ecf;
+}
+
+/* Modal Footer */
+.modal-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-save-btn {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: none;
+    background: #00c3ff;
+    color: #000;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 195, 255, 0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.modal-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(0, 195, 255, 0.9);
+    background: #27d9ff;
+}
+
+.modal-save-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(0, 195, 255, 0.5);
 }
 
 /* Create Log Form Styles */

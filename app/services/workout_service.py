@@ -347,3 +347,164 @@ class WorkoutService:
         
         # Return dict representation
         return workout.to_dict()
+
+    @staticmethod
+    def update_workout_with_exercises(
+        workout_id: int,
+        user_id: int,
+        workout_name: Optional[str] = None,
+        notes: Optional[str] = None,
+        exercises: Optional[List[Dict[str, Any]]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Update a workout and its exercises.
+        
+        Args:
+            workout_id: The ID of the workout to update
+            user_id: The ID of the user (for security - ensures user owns the workout)
+            workout_name: Optional new workout name
+            notes: Optional new notes
+            exercises: Optional list of exercise dictionaries to update/create
+        
+        Returns:
+            Dictionary with 'workout' and 'exercises' keys containing
+            serialized Workout and WorkoutExercise objects, or None if not found
+        """
+        # Verify that the workout exists and belongs to the given user
+        workout_row = db_helper.fetch_one(
+            """
+            SELECT * FROM workouts
+            WHERE id = ? AND user_id = ?
+            """,
+            (workout_id, user_id)
+        )
+        
+        # If no row is found, return None
+        if not workout_row:
+            return None
+        
+        # Update workout fields if provided
+        if workout_name is not None or notes is not None:
+            fields_to_update = []
+            params = []
+            
+            if workout_name is not None:
+                fields_to_update.append("workout_name = ?")
+                params.append(workout_name)
+            
+            if notes is not None:
+                fields_to_update.append("notes = ?")
+                params.append(notes)
+            
+            if fields_to_update:
+                params.extend([workout_id, user_id])
+                set_clause = ", ".join(fields_to_update)
+                db_helper.execute_query(
+                    f"""
+                    UPDATE workouts
+                    SET {set_clause}
+                    WHERE id = ? AND user_id = ?
+                    """,
+                    tuple(params)
+                )
+        
+        # Update exercises if provided
+        if exercises is not None:
+            # Get existing exercise IDs for this workout
+            existing_exercise_rows = db_helper.fetch_all(
+                """
+                SELECT id FROM workout_exercises
+                WHERE workout_id = ?
+                """,
+                (workout_id,)
+            )
+            existing_exercise_ids = {row[0] for row in existing_exercise_rows}
+            
+            # Process each exercise in the provided list
+            provided_exercise_ids = set()
+            for idx, exercise_dict in enumerate(exercises):
+                exercise_id = exercise_dict.get("id")
+                exercise_name = exercise_dict.get("exercise_name", "").strip()
+                
+                if not exercise_name:
+                    continue  # Skip exercises without names
+                
+                sets = exercise_dict.get("sets", 0)
+                reps = exercise_dict.get("reps", 0)
+                weight_kg = exercise_dict.get("weight_kg", 0.0)
+                previous_weight = exercise_dict.get("previous_weight", 0.0)
+                exercise_notes = exercise_dict.get("notes", "")
+                order_index = exercise_dict.get("order_index", idx)
+                
+                if exercise_id and exercise_id in existing_exercise_ids:
+                    # Update existing exercise
+                    provided_exercise_ids.add(exercise_id)
+                    db_helper.execute_query(
+                        """
+                        UPDATE workout_exercises
+                        SET exercise_name = ?, sets = ?, reps = ?, weight_kg = ?,
+                            previous_weight = ?, order_index = ?, notes = ?
+                        WHERE id = ? AND workout_id = ?
+                        """,
+                        (
+                            exercise_name, sets, reps, weight_kg,
+                            previous_weight, order_index, exercise_notes,
+                            exercise_id, workout_id
+                        )
+                    )
+                else:
+                    # Insert new exercise
+                    db_helper.execute_query(
+                        """
+                        INSERT INTO workout_exercises (
+                            workout_id, exercise_name, sets, reps, weight_kg,
+                            previous_weight, order_index, notes
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            workout_id, exercise_name, sets, reps, weight_kg,
+                            previous_weight, order_index, exercise_notes,
+                        )
+                    )
+            
+            # Delete exercises that were not in the provided list
+            exercises_to_delete = existing_exercise_ids - provided_exercise_ids
+            if exercises_to_delete:
+                placeholders = ",".join("?" * len(exercises_to_delete))
+                db_helper.execute_query(
+                    f"""
+                    DELETE FROM workout_exercises
+                    WHERE id IN ({placeholders}) AND workout_id = ?
+                    """,
+                    tuple(exercises_to_delete) + (workout_id,)
+                )
+        
+        # Fetch the updated workout
+        updated_workout_row = db_helper.fetch_one(
+            """
+            SELECT * FROM workouts
+            WHERE id = ? AND user_id = ?
+            """,
+            (workout_id, user_id)
+        )
+        
+        workout = Workout.from_row(updated_workout_row)
+        
+        # Fetch all exercises for this workout
+        exercise_rows = db_helper.fetch_all(
+            """
+            SELECT * FROM workout_exercises
+            WHERE workout_id = ?
+            ORDER BY order_index ASC
+            """,
+            (workout_id,)
+        )
+        
+        exercises = [WorkoutExercise.from_row(row) for row in exercise_rows]
+        
+        # Return clean dictionary
+        return {
+            "workout": workout.to_dict(),
+            "exercises": [ex.to_dict() for ex in exercises]
+        }

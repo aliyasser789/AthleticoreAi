@@ -165,16 +165,41 @@ def register_workout_routes(app):
 
     @app.route("/api/workouts/<int:workout_id>", methods=["PATCH"])
     def update_workout(workout_id):
-        """Update a workout's fields (partial update)."""
+        """Update a workout's fields and exercises (partial update)."""
         data = request.get_json() or {}
         user_id = data.get("user_id")
         workout_name = data.get("workout_name")
         log_date = data.get("log_date")
         notes = data.get("notes")
+        exercises = data.get("exercises")
         
         if not user_id:
             return jsonify({"error": "user_id is required"}), 400
         
+        # If exercises are provided, use the comprehensive update method
+        if exercises is not None:
+            try:
+                result = WorkoutService.update_workout_with_exercises(
+                    workout_id=workout_id,
+                    user_id=int(user_id),
+                    workout_name=workout_name,
+                    notes=notes,
+                    exercises=exercises
+                )
+                
+                if not result:
+                    return jsonify({"error": "Workout not found or unauthorized"}), 404
+                
+                return jsonify({
+                    "message": "Workout updated successfully",
+                    **result
+                }), 200
+            except Exception as e:
+                print(f"Error updating workout with exercises: {e}")
+                traceback.print_exc()
+                return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        
+        # Otherwise, use the simple update method (for backward compatibility)
         # At least one field must be provided for update
         if workout_name is None and log_date is None and notes is None:
             return jsonify({"error": "At least one field (workout_name, log_date, notes) must be provided"}), 400
