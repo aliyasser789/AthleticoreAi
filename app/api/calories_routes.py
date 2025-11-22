@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from app.services.calorie_tracker import Calorie_manager
 from app.services.food_chatbot_client import process_food_entry
+from app.services.tdee_service import TdeeService
 from app.db import db_helper
 from app.models.user import User
 from datetime import datetime
@@ -144,11 +145,32 @@ def register_calories_routes(app):
 
     @app.route("/api/calories/logs/<int:user_id>/today", methods=["GET"])
     def get_today_logs(user_id):
-        """Get today's calorie logs for a user."""
+        """Get today's calorie logs for a user, including total calories, goal calories, and surplus."""
         try:
             logs = Calorie_manager.get_today_logs(user_id)
+            
+            # Calculate total calories consumed today
+            total_calories = Calorie_manager.get_today_total_calories(user_id)
+            
+            # Get user's goal calories from TDEE profile
+            goal_calories = None
+            tdee_profile = TdeeService.get_profile_by_user_id(user_id)
+            if tdee_profile:
+                goal_calories = tdee_profile.goal_calories
+            
+            # Calculate surplus: (Total Calories - Goal Calories)
+            # If negative (under goal), show 0. If positive (over goal), show the difference.
+            surplus = 0.0
+            if goal_calories is not None:
+                difference = total_calories - goal_calories
+                if difference > 0:
+                    surplus = difference
+            
             return jsonify({
-                "logs": [log.to_dict() for log in logs]
+                "logs": [log.to_dict() for log in logs],
+                "total_calories": total_calories,
+                "goal_calories": goal_calories,
+                "surplus": surplus
             }), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500

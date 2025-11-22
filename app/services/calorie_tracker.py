@@ -89,6 +89,22 @@ class Calorie_manager:
         return Calorie_manager.get_logs(user_id, today)
 
     @staticmethod
+    def get_today_total_calories(user_id: int) -> float:
+        """Calculate total calories consumed today."""
+        today = CalorieLog.today_iso()
+        row = db_helper.fetch_one(
+            """
+            SELECT COALESCE(SUM(calories), 0) as total
+            FROM calorie_logs
+            WHERE user_id = ? AND entry_date = ? AND is_deleted = 0
+            """,
+            (user_id, today)
+        )
+        if row and row[0] is not None:
+            return float(row[0])
+        return 0.0
+
+    @staticmethod
     def get_log_by_id(log_id: int) -> Optional[CalorieLog]:
         """Get a specific calorie log by ID."""
         row = db_helper.fetch_one(

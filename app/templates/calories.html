@@ -49,6 +49,10 @@
                         <div class="macro-label">Calories</div>
                         <div class="macro-value" id="total-calories">0</div>
                     </div>
+                    <div class="macro-box">
+                        <div class="macro-label">Surplus</div>
+                        <div class="macro-value" id="total-surplus">0</div>
+                    </div>
                 </div>
 
                 <!-- Food Items Feed -->
@@ -82,6 +86,8 @@
         let totalCarbs = 0;
         let totalFat = 0;
         let totalCalories = 0;
+        let goalCalories = null; // Will be set from API
+        let surplus = 0; // Always starts at 0 (green) each day
         let chatHistory = [];
         let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
@@ -110,6 +116,7 @@
                 totalCarbs = 0;
                 totalFat = 0;
                 totalCalories = 0;
+                surplus = 0;
                 chatHistory = [];
                 
                 // Clear the food feed
@@ -144,17 +151,45 @@
             }
         }
         
+        // Function to calculate surplus
+        // Surplus = (Total Calories - Goal Calories)
+        // If negative (under goal), return 0 (green).
+        // If positive (over goal), return the difference (red).
+        function calculateSurplus() {
+            if (goalCalories === null || goalCalories === undefined) {
+                return 0; // No goal set, show 0 (green)
+            }
+            const difference = totalCalories - goalCalories;
+            // Always return 0 or positive value (never negative)
+            return difference > 0 ? difference : 0;
+        }
+
         // Function to update macro displays
         function updateMacroDisplays() {
             const proteinEl = document.getElementById('total-protein');
             const carbsEl = document.getElementById('total-carbs');
             const fatsEl = document.getElementById('total-fats');
             const caloriesEl = document.getElementById('total-calories');
+            const surplusEl = document.getElementById('total-surplus');
             
             if (proteinEl) proteinEl.textContent = Math.round(totalProtein) + 'g';
             if (carbsEl) carbsEl.textContent = Math.round(totalCarbs) + 'g';
             if (fatsEl) fatsEl.textContent = Math.round(totalFat) + 'g';
             if (caloriesEl) caloriesEl.textContent = Math.round(totalCalories);
+            
+            // Update surplus - always recalculate to ensure accuracy
+            if (surplusEl) {
+                surplus = calculateSurplus();
+                surplusEl.textContent = Math.round(surplus);
+                
+                // Color logic: Green when 0 (at or under goal), Red when > 0 (over goal)
+                // Use setProperty with important flag to override CSS !important rules
+                if (surplus > 0) {
+                    surplusEl.style.setProperty('color', '#ff0000', 'important'); // Red - exceeded goal
+                } else {
+                    surplusEl.style.setProperty('color', '#00ff00', 'important'); // Green - at or under goal
+                }
+            }
         }
 
         // Function to append message to chat window
@@ -193,6 +228,77 @@
             console.log('Macros updated - Protein:', totalProtein, 'Carbs:', totalCarbs, 'Fat:', totalFat, 'Calories:', totalCalories);
         }
 
+        // Function to handle delete action
+        async function handleDelete(logId, buttonElement) {
+            if (!logId) {
+                console.error('No log ID provided for deletion');
+                return;
+            }
+            
+            // Get the food item element (parent of the button)
+            const foodItemEl = buttonElement.closest('.food-item');
+            if (!foodItemEl) {
+                console.error('Food item element not found');
+                return;
+            }
+            
+            // Get food name from the element
+            const foodNameEl = foodItemEl.querySelector('.food-name');
+            const foodName = foodNameEl ? foodNameEl.textContent.trim() : 'Food item';
+            
+            // Get macro values from data attributes
+            const calories = parseFloat(foodItemEl.getAttribute('data-calories')) || 0;
+            const protein = parseFloat(foodItemEl.getAttribute('data-protein')) || 0;
+            const carbs = parseFloat(foodItemEl.getAttribute('data-carbs')) || 0;
+            const fat = parseFloat(foodItemEl.getAttribute('data-fat')) || 0;
+            
+            // Optimistic UI update: Remove the item immediately
+            foodItemEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            foodItemEl.style.opacity = '0';
+            foodItemEl.style.transform = 'translateX(-20px)';
+            
+            // Remove from DOM after animation
+            setTimeout(() => {
+                foodItemEl.remove();
+            }, 300);
+            
+            // Subtract macros from totals
+            totalProtein = Math.max(0, totalProtein - protein);
+            totalCarbs = Math.max(0, totalCarbs - carbs);
+            totalFat = Math.max(0, totalFat - fat);
+            totalCalories = Math.max(0, totalCalories - calories);
+            
+            // Update displays (including surplus)
+            updateMacroDisplays();
+            
+            // Automatically add "Deleted [Food Name]" message to chat
+            const deleteMessage = `Deleted ${foodName}`;
+            appendMessage(deleteMessage, 'bot');
+            chatHistory.push({ role: 'assistant', content: deleteMessage });
+            
+            // Call API to delete from database
+            try {
+                const response = await fetch(`/api/calories/log/${logId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Failed to delete log entry');
+                }
+                
+                console.log('Food item deleted successfully:', logId);
+            } catch (error) {
+                console.error('Error deleting food item:', error);
+                // If deletion fails, we could reload the page or show an error message
+                // For now, we'll just log it since we already removed it from UI
+                appendMessage('Error: Could not delete entry from database. Please refresh the page.', 'bot');
+            }
+        }
+
         // Function to add food item to the feed
         function addFoodItem(foodItem) {
             if (!foodFeed) {
@@ -203,16 +309,39 @@
             const foodItemEl = document.createElement('div');
             foodItemEl.classList.add('food-item');
             
+            // Store the log ID as a data attribute for deletion
+            if (foodItem.id) {
+                foodItemEl.setAttribute('data-log-id', foodItem.id);
+            }
+            
+            // Store macro values as data attributes for deletion calculations
+            foodItemEl.setAttribute('data-calories', foodItem.calories || 0);
+            foodItemEl.setAttribute('data-protein', foodItem.protein || 0);
+            foodItemEl.setAttribute('data-carbs', foodItem.carbs || 0);
+            foodItemEl.setAttribute('data-fat', foodItem.fat || 0);
+            
             const foodName = foodItem.name || 'Food Item';
             const calories = Math.round(foodItem.calories || 0);
             const protein = Math.round(foodItem.protein || 0);
             const carbs = Math.round(foodItem.carbs || 0);
             const fat = Math.round(foodItem.fat || 0);
             
+            // Only show delete button if we have a log ID
+            const deleteButtonHtml = foodItem.id ? `
+                <button class="food-delete-btn" onclick="handleDelete(${foodItem.id}, this)" title="Delete this entry">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            ` : '';
+            
             foodItemEl.innerHTML = `
                 <div class="food-item-main">
                     <div class="food-name">${foodName}</div>
-                    <div class="food-calories">${calories} kcal</div>
+                    <div class="food-calories-container">
+                        <div class="food-calories">${calories} kcal</div>
+                        ${deleteButtonHtml}
+                    </div>
                 </div>
                 <div class="food-macros">
                     <span class="macro-badge protein">P: ${protein}g</span>
@@ -315,6 +444,28 @@
             }
         }
 
+        // Function to fetch goal calories from TDEE profile
+        async function fetchGoalCalories() {
+            if (!currentUser?.id) {
+                return;
+            }
+            
+            try {
+                // Goal calories will be included in the loadTodayLogs response
+                // But we can also fetch it separately if needed
+                const response = await fetch(`/api/tdee/profile/${currentUser.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.profile && data.profile.goal_calories) {
+                        goalCalories = data.profile.goal_calories;
+                        updateMacroDisplays(); // Update surplus display
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch goal calories:', error);
+            }
+        }
+
         // Function to load today's existing logs
         async function loadTodayLogs() {
             if (!currentUser?.id) {
@@ -330,11 +481,22 @@
                 const data = await response.json();
                 const logs = data.logs || [];
                 
+                // Update goal calories and total calories from API response
+                if (data.goal_calories !== undefined && data.goal_calories !== null) {
+                    goalCalories = data.goal_calories;
+                }
+                if (data.total_calories !== undefined) {
+                    totalCalories = data.total_calories || 0;
+                }
+                // Don't set surplus from API - always recalculate it to ensure accuracy
+                // Surplus will be calculated in updateMacroDisplays()
+                
                 // Add each log to the feed and update macros
                 if (logs.length > 0) {
                     logs.forEach(log => {
                         if (log.calories && log.description) {
                             const foodItem = {
+                                id: log.id, // Include log ID for deletion
                                 name: log.description,
                                 calories: log.calories || 0,
                                 protein: log.protein_g || 0,
@@ -342,13 +504,28 @@
                                 fat: log.fat_g || 0
                             };
                             addFoodItem(foodItem);
-                            updateMacros(foodItem);
+                            // Don't call updateMacros here - we already have totals from API
+                            // Just add the visual item
                         }
                     });
+                    
+                    // Recalculate macros from logs to ensure consistency
+                    totalProtein = 0;
+                    totalCarbs = 0;
+                    totalFat = 0;
+                    logs.forEach(log => {
+                        if (log.protein_g) totalProtein += log.protein_g;
+                        if (log.carbs_g) totalCarbs += log.carbs_g;
+                        if (log.fat_g) totalFat += log.fat_g;
+                    });
+                    
                     appendMessage(`Loaded ${logs.length} food item(s) from today!`, 'bot');
                 } else {
                     console.log('No logs found for today');
                 }
+                
+                // Update all displays including surplus
+                updateMacroDisplays();
             } catch (error) {
                 console.error('Failed to load today\'s logs:', error);
             }
@@ -377,6 +554,10 @@
             currentDate = getTodayDate();
             updateDateDisplay();
             
+            // Initialize surplus to 0 (green) on page load
+            surplus = 0;
+            updateMacroDisplays(); // This will set the color to green
+            
             // Check for date reset
             checkDateReset();
             
@@ -384,16 +565,19 @@
             appendMessage('Hi! I\'m your AI Nutrition Coach. Tell me what you ate and I\'ll log it for you!', 'bot');
             
             // Set up event listeners
-            logBtn.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    sendMessage();
-                }
+        logBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
             });
             
-            // Load existing logs
+            // Load existing logs (this will also fetch goal calories)
             loadTodayLogs();
+            
+            // Also fetch goal calories separately as backup
+            fetchGoalCalories();
             
             // Check for date change every minute (in case user keeps page open past midnight)
             setInterval(checkDateReset, 60000); // Check every minute

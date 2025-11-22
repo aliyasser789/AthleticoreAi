@@ -530,17 +530,18 @@ select:focus {
 .macro-summary {
     display: flex;
     flex-direction: row;
-    gap: 15px;
+    gap: 12px;
     margin-bottom: 30px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .macro-box {
     flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px 10px;
     text-align: center;
 }
 
@@ -559,6 +560,11 @@ select:focus {
     font-weight: 700;
     color: #00A8FF !important;
     text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+}
+
+/* Surplus value can be green or red, override the default blue */
+#total-surplus {
+    color: #00ff00 !important; /* Default green */
 }
 
 /* Food Feed: Scrollable list */
@@ -612,11 +618,60 @@ select:focus {
     box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
 }
 
+/* Delete button - positioned absolutely on the right, fades in on hover */
+.food-delete-btn {
+    position: absolute;
+    right: 10px; /* Match the padding-right of container for perfect alignment */
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px; /* Reduced padding for smaller icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    color: #888;
+    z-index: 10;
+}
+
+/* On hover, fade in delete button */
+.food-item:hover .food-delete-btn {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.food-delete-btn:hover {
+    background: rgba(255, 0, 0, 0.15);
+    color: #ff4444;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.food-delete-btn:active {
+    transform: translateY(-50%) scale(0.95);
+    color: #ff0000;
+    background: rgba(255, 0, 0, 0.25);
+}
+
+.food-delete-btn svg {
+    width: 14px; /* Reduced from 18px for a more subtle icon */
+    height: 14px; /* Reduced from 18px for a more subtle icon */
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
 .food-item-main {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    position: relative;
 }
 
 .food-name {
@@ -627,11 +682,34 @@ select:focus {
     flex: 1;
 }
 
+/* Container for calories and delete button */
+.food-calories-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Align to middle-right */
+    min-width: 120px; /* Ensure space for both elements */
+    height: 100%;
+    padding-right: 10px; /* Padding from the edge - matches delete button position */
+}
+
 .food-calories {
     font-family: 'Orbitron', sans-serif;
-    font-size: 14px;
+    font-size: 16px; /* Increased from 14px for better prominence */
     color: #00A8FF !important;
     font-weight: 600;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0);
+    white-space: nowrap;
+    text-align: right; /* Align text to the right */
+    margin-right: 0; /* No margin by default */
+}
+
+/* On hover, slide calories left to make room for delete button */
+/* Increased slide distance to -75px to ensure 8-12px gap between text and icon */
+/* Icon is ~26px wide (14px icon + 12px padding), so -75px provides ~12px gap */
+.food-item:hover .food-calories {
+    transform: translateX(-75px);
 }
 
 .food-macros {
