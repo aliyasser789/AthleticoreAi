@@ -105,6 +105,35 @@ def create_tables(conn):
         """
     )
 
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS workouts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        workout_name TEXT NOT NULL,
+        date TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """
+    )
+
+    cursor.execute(
+        """ CREATE TABLE IF NOT EXISTS workout_exercises (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workout_id INTEGER NOT NULL,
+        exercise_name TEXT NOT NULL,
+        sets INTEGER,
+        reps INTEGER,
+        weight_kg REAL,
+        previous_weight REAL,
+        order_index INTEGER NOT NULL,
+        notes TEXT,
+        FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
+        );
+        """
+    )
+
     conn.commit()
 
 

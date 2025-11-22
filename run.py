@@ -3,6 +3,7 @@ from app.api.auth_routes import register_auth_routes
 from app.api.tdee_routes import register_tdee_routes
 from app.api.food_feed_routes import register_food_feed_routes
 from app.api.calories_routes import register_calories_routes
+from app.api.workout_routes import register_workout_routes
 
 
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -43,6 +44,7 @@ register_auth_routes(app)
 register_tdee_routes(app)
 register_food_feed_routes(app)
 register_calories_routes(app)
+register_workout_routes(app)
 
 
 
