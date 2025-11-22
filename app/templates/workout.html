@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="dashboard-body">
    <nav class="top-nav">
@@ -39,8 +39,45 @@
         </div>
 
         <!-- Fixed Create Log Button -->
-        <a href="create_log.html" class="create-btn">Create Log</a>
+        <a href="/create-log" class="create-btn">Create Log</a>
    </main>
+   
+   <!-- Toast Notification Container -->
+   <div class="toast-container" id="toast-container"></div>
+   
+   <script>
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+   </script>
    <script>
 
         // Get current day of week
@@ -49,44 +86,23 @@
             return days[new Date().getDay()];
         }
 
-        // Fake logs array with detailed data
-        const fakeLogs = [
-            { 
-                day: "Monday", 
-                summary: "Chest",
-                weight_kg: 80,
-                prev_weight: 75,
-                reps: 12,
-                sets: 4,
-                notes: "Great session! Increased weight by 5kg. Felt strong throughout."
-            },
-            { 
-                day: "Thursday", 
-                summary: "Back",
-                weight_kg: 100,
-                prev_weight: 95,
-                reps: 10,
-                sets: 4,
-                notes: "Focus on form. Pull-ups felt easier today."
-            },
-            { 
-                day: getCurrentDay(), 
-                summary: "Legs",
-                weight_kg: 120,
-                prev_weight: 115,
-                reps: 8,
-                sets: 5,
-                notes: "Leg day complete! Squats were challenging but manageable."
-            }
-        ];
+        // Helper function to format date to day of week
+        function formatDateToDay(dateString) {
+            const date = new Date(dateString + 'T00:00:00'); // Add time to avoid timezone issues
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        }
 
         // DOM elements
         const emptyState = document.getElementById('empty-state');
         const workoutFeed = document.getElementById('workout-feed');
         const currentDay = getCurrentDay();
+        
+        // Store workouts data
+        let workoutsData = [];
 
-        // Function to create a log card
-        function createLogCard(log, isToday = false) {
+        // Function to create a log card from workout data
+        function createLogCard(workoutItem, isToday = false) {
             const card = document.createElement('div');
             card.className = 'log-card';
             
@@ -94,16 +110,18 @@
                 card.classList.add('today-highlight');
             }
 
-            // Get day abbreviation (first 3 letters, uppercase)
-            const dayAbbr = log.day.substring(0, 3).toUpperCase();
+            const workout = workoutItem.workout;
+            const day = formatDateToDay(workout.date);
+            const dayAbbr = day.substring(0, 3).toUpperCase();
 
-            // Store full log data as JSON in data attribute
-            const logData = JSON.stringify(log);
-            card.setAttribute('data-log', logData);
+            // Store full workout data as JSON in data attribute
+            const workoutData = JSON.stringify(workoutItem);
+            card.setAttribute('data-workout', workoutData);
+            card.setAttribute('data-workout-id', workout.id);
 
             card.innerHTML = `
                 <div class="day-badge">${dayAbbr}</div>
-                <div class="log-summary">${log.summary}</div>
+                <div class="log-summary">${workout.workout_name}</div>
                 <button class="details-btn" onclick="openDetailsModalFromCard(this)">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -112,43 +130,86 @@
                 </button>
             `;
 
-            // Store log data as data attribute for deletion
-            card.setAttribute('data-day', log.day);
-            card.setAttribute('data-summary', log.summary);
-
             return card;
         }
 
         // Function to delete a log
-        function deleteLog(btn) {
+        async function deleteLog(btn) {
             const card = btn.closest('.log-card');
             if (!card) return;
 
-            // Get log data from card
-            const day = card.getAttribute('data-day');
-            const summary = card.getAttribute('data-summary');
+            const workoutId = card.getAttribute('data-workout-id');
+            if (!workoutId) return;
 
-            // Apply fade-out animation
+            // Get user from localStorage
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                showToast('Please log in first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            let user;
+            try {
+                user = JSON.parse(storedUser);
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+                showToast('Session expired. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            if (!user || !user.id) {
+                showToast('User information not found. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+
+            // Apply fade-out animation immediately
             card.style.opacity = '0';
             card.style.transform = 'translateX(100px)';
             card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
 
-            // Remove from fakeLogs array
-            const index = fakeLogs.findIndex(log => log.day === day && log.summary === summary);
-            if (index > -1) {
-                fakeLogs.splice(index, 1);
-            }
+            // Call API to delete
+            try {
+                const response = await fetch(`/api/workouts/${workoutId}?user_id=${user.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            // Remove from DOM after animation
-            setTimeout(() => {
-                card.remove();
-                
-                // Check if feed is empty
-                if (fakeLogs.length === 0) {
-                    emptyState.style.display = 'block';
-                    workoutFeed.style.display = 'none';
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to delete workout');
                 }
-            }, 300);
+
+                // Show success message
+                showToast('Workout deleted successfully!', 'success');
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    card.remove();
+                    
+                    // Refresh the entire page to reload workouts
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 800);
+                }, 300);
+            } catch (error) {
+                console.error('Error deleting workout:', error);
+                showToast('Error: ' + error.message, 'error');
+                // Revert animation on error
+                card.style.opacity = '1';
+                card.style.transform = 'translateX(0)';
+            }
         }
 
         // Function to render logs
@@ -157,7 +218,7 @@
             workoutFeed.innerHTML = '';
 
             // If no logs, show empty state
-            if (fakeLogs.length === 0) {
+            if (workoutsData.length === 0) {
                 emptyState.style.display = 'block';
                 workoutFeed.style.display = 'none';
                 return;
@@ -167,17 +228,23 @@
             emptyState.style.display = 'none';
             workoutFeed.style.display = 'block';
 
-            // Sort logs: today's log first, then others
-            const sortedLogs = [...fakeLogs].sort((a, b) => {
-                if (a.day === currentDay) return -1;
-                if (b.day === currentDay) return 1;
-                return 0;
+            // Sort workouts: today's workout first, then by date (newest first)
+            const sortedWorkouts = [...workoutsData].sort((a, b) => {
+                const aDay = formatDateToDay(a.workout.date);
+                const bDay = formatDateToDay(b.workout.date);
+                
+                if (aDay === currentDay) return -1;
+                if (bDay === currentDay) return 1;
+                
+                // Otherwise sort by date (newest first)
+                return new Date(b.workout.date) - new Date(a.workout.date);
             });
 
-            // Render each log
-            sortedLogs.forEach(log => {
-                const isToday = log.day === currentDay;
-                const card = createLogCard(log, isToday);
+            // Render each workout
+            sortedWorkouts.forEach(workoutItem => {
+                const workoutDay = formatDateToDay(workoutItem.workout.date);
+                const isToday = workoutDay === currentDay;
+                const card = createLogCard(workoutItem, isToday);
                 workoutFeed.appendChild(card);
             });
         }
@@ -187,30 +254,76 @@
             const card = btn.closest('.log-card');
             if (!card) return;
 
-            const logDataStr = card.getAttribute('data-log');
-            if (!logDataStr) return;
+            const workoutDataStr = card.getAttribute('data-workout');
+            if (!workoutDataStr) return;
 
             try {
-                const log = JSON.parse(logDataStr);
-                openDetailsModal(log);
+                const workoutItem = JSON.parse(workoutDataStr);
+                openDetailsModal(workoutItem);
             } catch (e) {
-                console.error('Failed to parse log data:', e);
+                console.error('Failed to parse workout data:', e);
             }
         }
 
         // Function to open details modal
-        function openDetailsModal(log) {
+        function openDetailsModal(workoutItem) {
             const modal = document.getElementById('details-modal');
             if (!modal) return;
 
-            // Populate modal with log data
-            document.getElementById('modal-day').textContent = log.day || 'N/A';
-            document.getElementById('modal-summary').textContent = log.summary || 'N/A';
-            document.getElementById('modal-weight').textContent = log.weight_kg || 'N/A';
-            document.getElementById('modal-prev-weight').textContent = log.prev_weight || 'N/A';
-            document.getElementById('modal-sets').textContent = log.sets || 'N/A';
-            document.getElementById('modal-reps').textContent = log.reps || 'N/A';
-            document.getElementById('modal-notes').textContent = log.notes || 'No notes available.';
+            const workout = workoutItem.workout;
+            const exercises = workoutItem.exercises || [];
+            
+            // Format date to day of week
+            const day = formatDateToDay(workout.date);
+            
+            // Get summary of exercises (first exercise name or count)
+            const summary = exercises.length > 0 
+                ? exercises[0].exercise_name 
+                : workout.workout_name;
+            
+            // Calculate totals from exercises
+            let totalWeight = 0;
+            let totalSets = 0;
+            let totalReps = 0;
+            let maxWeight = 0;
+            let maxPrevWeight = 0;
+            
+            exercises.forEach(ex => {
+                if (ex.weight_kg) {
+                    totalWeight += ex.weight_kg * (ex.sets || 0);
+                    maxWeight = Math.max(maxWeight, ex.weight_kg);
+                }
+                if (ex.previous_weight) {
+                    maxPrevWeight = Math.max(maxPrevWeight, ex.previous_weight);
+                }
+                totalSets += ex.sets || 0;
+                totalReps += (ex.reps || 0) * (ex.sets || 0);
+            });
+
+            // Populate modal with workout data
+            document.getElementById('modal-day').textContent = day || 'N/A';
+            document.getElementById('modal-summary').textContent = workout.workout_name || 'N/A';
+            document.getElementById('modal-weight').textContent = maxWeight > 0 ? `${maxWeight} kg` : 'N/A';
+            document.getElementById('modal-prev-weight').textContent = maxPrevWeight > 0 ? `${maxPrevWeight} kg` : 'N/A';
+            document.getElementById('modal-sets').textContent = totalSets > 0 ? totalSets : 'N/A';
+            document.getElementById('modal-reps').textContent = totalReps > 0 ? totalReps : 'N/A';
+            
+            // Build notes from workout notes and exercise details
+            let notesText = workout.notes || '';
+            if (exercises.length > 0) {
+                const exerciseDetails = exercises.map(ex => {
+                    let detail = `${ex.exercise_name}: `;
+                    if (ex.sets && ex.reps) detail += `${ex.sets}x${ex.reps}`;
+                    if (ex.weight_kg) detail += ` @ ${ex.weight_kg}kg`;
+                    if (ex.notes) detail += ` (${ex.notes})`;
+                    return detail;
+                }).join('\n');
+                
+                if (notesText) notesText += '\n\n';
+                notesText += exerciseDetails;
+            }
+            
+            document.getElementById('modal-notes').textContent = notesText || 'No notes available.';
 
             // Show modal
             modal.style.display = 'flex';
@@ -235,9 +348,54 @@
             }
         });
 
+        // Function to load workouts from API
+        async function loadWorkouts() {
+            // Get user from localStorage
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                console.log('No user found, showing empty state');
+                emptyState.style.display = 'block';
+                workoutFeed.style.display = 'none';
+                return;
+            }
+
+            let user;
+            try {
+                user = JSON.parse(storedUser);
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+                emptyState.style.display = 'block';
+                workoutFeed.style.display = 'none';
+                return;
+            }
+
+            if (!user || !user.id) {
+                console.log('No user ID found');
+                emptyState.style.display = 'block';
+                workoutFeed.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/workouts?user_id=${user.id}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load workouts');
+                }
+
+                workoutsData = data.workouts || [];
+                renderLogs();
+            } catch (error) {
+                console.error('Error loading workouts:', error);
+                emptyState.style.display = 'block';
+                workoutFeed.style.display = 'none';
+            }
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            renderLogs();
+            loadWorkouts();
         });
    </script>
 

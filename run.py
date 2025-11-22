@@ -33,6 +33,14 @@ def tdee_page():
 def calories_page():
     return render_template("calories.html")
 
+@app.route("/workout")
+def workout_page():
+    return render_template("workout.html")
+
+@app.route("/create-log")
+def create_log_page():
+    return render_template("create_log.html")
+
 @app.route("/forgot-password")
 def forgot_password_page():
     return render_template("forgot_password.html")

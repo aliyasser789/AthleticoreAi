@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="dashboard-body">
    <nav class="top-nav">
@@ -99,6 +99,43 @@
             </form>
         </div>
    </main>
+   
+   <!-- Toast Notification Container -->
+   <div class="toast-container" id="toast-container"></div>
+   
+   <script>
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+   </script>
    <script>
         // Function to remove an exercise field
         function removeExercise(btn) {
@@ -149,51 +186,180 @@
             exercisesList.appendChild(newExercise);
         }
 
+        // Helper function to convert day of week to ISO date
+        function getDateForDayOfWeek(dayOfWeek) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const today = new Date();
+            const currentDay = today.getDay();
+            const targetDay = days.indexOf(dayOfWeek);
+            
+            // Calculate days difference
+            let daysDiff = targetDay - currentDay;
+            if (daysDiff < 0) {
+                daysDiff += 7; // If target day has passed this week, use next week
+            }
+            
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + daysDiff);
+            
+            // Return ISO date string (YYYY-MM-DD)
+            return targetDate.toISOString().split('T')[0];
+        }
+
         // Handle form submission
-        document.getElementById('workout-log-form').addEventListener('submit', function(e) {
+        document.getElementById('workout-log-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Get user from localStorage
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                showToast('Please log in first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            
+            let user;
+            try {
+                user = JSON.parse(storedUser);
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+                showToast('Session expired. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            
+            if (!user || !user.id) {
+                showToast('User information not found. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            
             // Get form data
-            const logName = document.getElementById('log-name').value;
+            const workoutName = document.getElementById('log-name').value.trim();
             const dayOfWeek = document.getElementById('day-of-week').value;
+            
+            if (!workoutName || !dayOfWeek) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Convert day of week to ISO date
+            const logDate = getDateForDayOfWeek(dayOfWeek);
             
             // Collect all exercises
             const exerciseEntries = document.querySelectorAll('.exercise-entry');
             const exercises = [];
             
-            exerciseEntries.forEach(entry => {
-                const exerciseName = entry.querySelector('input[name="exercise-name"]').value;
+            exerciseEntries.forEach((entry, index) => {
+                const exerciseName = entry.querySelector('input[name="exercise-name"]').value.trim();
                 const weight = entry.querySelector('input[name="weight"]').value;
                 const prevWeight = entry.querySelector('input[name="prev-weight"]').value;
                 const reps = entry.querySelector('input[name="reps"]').value;
                 const sets = entry.querySelector('input[name="sets"]').value;
-                const notes = entry.querySelector('textarea[name="notes"]').value;
+                const notes = entry.querySelector('textarea[name="notes"]').value.trim();
                 
                 if (exerciseName) { // Only add if exercise name is provided
+                    // Parse sets and reps - they are required
+                    const setsStr = sets ? sets.trim() : '';
+                    const repsStr = reps ? reps.trim() : '';
+                    const setsValue = setsStr ? parseInt(setsStr) : null;
+                    const repsValue = repsStr ? parseInt(repsStr) : null;
+                    
+                    // Validate required fields
+                    if (!setsStr || setsValue === null || isNaN(setsValue) || setsValue <= 0) {
+                        showToast(`Exercise "${exerciseName}": Sets is required and must be greater than 0`, 'error');
+                        return;
+                    }
+                    
+                    if (!repsStr || repsValue === null || isNaN(repsValue) || repsValue <= 0) {
+                        showToast(`Exercise "${exerciseName}": Reps is required and must be greater than 0`, 'error');
+                        return;
+                    }
+                    
                     exercises.push({
-                        name: exerciseName,
-                        weight_kg: weight ? parseFloat(weight) : null,
-                        prev_weight: prevWeight ? parseFloat(prevWeight) : null,
-                        reps: reps ? parseInt(reps) : null,
-                        sets: sets ? parseInt(sets) : null,
+                        exercise_name: exerciseName, // API expects exercise_name
+                        weight_kg: weight && weight.trim() ? parseFloat(weight) : 0.0,
+                        previous_weight: prevWeight && prevWeight.trim() ? parseFloat(prevWeight) : 0.0, // API expects previous_weight
+                        reps: repsValue,
+                        sets: setsValue,
+                        order_index: index, // Add order_index
                         notes: notes || null
                     });
                 }
             });
             
-            // Build final JSON object
-            const workoutLog = {
-                log_name: logName,
-                day: dayOfWeek,
+            if (exercises.length === 0) {
+                showToast('Please add at least one exercise', 'error');
+                return;
+            }
+            
+            // Build final JSON object matching API expectations
+            const workoutData = {
+                user_id: user.id,
+                workout_name: workoutName, // API expects workout_name
+                log_date: logDate, // API expects log_date (ISO format)
+                notes: null, // Optional, can be added later if needed
                 exercises: exercises
             };
             
-            // Console log for debugging (ready for backend connection)
-            console.log('Workout Log Data:', JSON.stringify(workoutLog, null, 2));
+            // Debug: Log the data being sent
+            console.log('Sending workout data:', JSON.stringify(workoutData, null, 2));
             
-            // TODO: Send to backend API
-            // For now, redirect back to workout page
-            window.location.href = 'workout.html';
+            // Send to backend API
+            try {
+                const response = await fetch('/api/workouts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(workoutData)
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response:', parseError);
+                    const text = await response.text();
+                    console.error('Response text:', text);
+                    alert('Error: Server returned invalid response. Status: ' + response.status);
+                    return;
+                }
+                
+                console.log('API Response:', data);
+                
+                if (!response.ok) {
+                    // Show the actual error message from the server
+                    const errorMsg = data.error || 'Failed to create workout';
+                    console.error('API Error:', errorMsg, 'Status:', response.status);
+                    
+                    // Show a more user-friendly error message
+                    let userMessage = errorMsg;
+                    if (errorMsg.includes('no such table')) {
+                        userMessage = 'Database not initialized. Please contact support.';
+                    } else if (errorMsg.includes('Database error')) {
+                        userMessage = 'Database error occurred. Please try again.';
+                    }
+                    
+                    showToast(userMessage, 'error');
+                    return;
+                }
+                
+                // Success - show toast and redirect to workout page
+                showToast('Workout log created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/workout';
+                }, 1500);
+            } catch (error) {
+                console.error('Error creating workout:', error);
+                showToast(error.message || 'Failed to create workout. Please try again.', 'error');
+            }
         });
    </script>
 </body>

@@ -63,13 +63,13 @@ class WorkoutService:
         )
         
         if not workout_row:
-            raise RuntimeError("Failed to create workout")
+            raise RuntimeError("Failed to create workout - workout was not inserted or could not be retrieved")
         
         # Convert row to Workout model
         workout = Workout.from_row(workout_row)
         
         # Insert all exercises into workout_exercises
-        for exercise_dict in exercises_data:
+        for idx, exercise_dict in enumerate(exercises_data):
             exercise_name = exercise_dict.get("exercise_name")
             sets = exercise_dict.get("sets")
             reps = exercise_dict.get("reps")
@@ -78,25 +78,38 @@ class WorkoutService:
             order_index = exercise_dict.get("order_index")
             exercise_notes = exercise_dict.get("notes")
             
-            db_helper.execute_query(
-                """
-                INSERT INTO workout_exercises (
-                    workout_id, exercise_name, sets, reps, weight_kg,
-                    previous_weight, order_index, notes
+            # Validate required fields before inserting
+            if not exercise_name:
+                raise ValueError(f"Exercise {idx + 1}: exercise_name is required")
+            if sets is None:
+                raise ValueError(f"Exercise {idx + 1}: sets is required")
+            if reps is None:
+                raise ValueError(f"Exercise {idx + 1}: reps is required")
+            if order_index is None:
+                raise ValueError(f"Exercise {idx + 1}: order_index is required")
+            
+            try:
+                db_helper.execute_query(
+                    """
+                    INSERT INTO workout_exercises (
+                        workout_id, exercise_name, sets, reps, weight_kg,
+                        previous_weight, order_index, notes
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        workout.id,
+                        exercise_name,
+                        sets,
+                        reps,
+                        weight_kg,
+                        previous_weight,
+                        order_index,
+                        exercise_notes,
+                    )
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    workout.id,
-                    exercise_name,
-                    sets,
-                    reps,
-                    weight_kg,
-                    previous_weight,
-                    order_index,
-                    exercise_notes,
-                )
-            )
+            except Exception as e:
+                raise RuntimeError(f"Failed to insert exercise {idx + 1} ({exercise_name}): {str(e)}")
         
         # Fetch all exercises back for this workout
         exercise_rows = db_helper.fetch_all(
@@ -164,6 +177,54 @@ class WorkoutService:
             "workout": workout.to_dict(),
             "exercises": [ex.to_dict() for ex in exercises]
         }
+
+    @staticmethod
+    def get_workouts_for_user(user_id: int) -> List[Dict[str, Any]]:
+        """
+        Get all workouts for a specific user.
+        
+        Args:
+            user_id: The ID of the user
+        
+        Returns:
+            List of dictionaries, each containing 'workout' and 'exercises' keys
+        """
+        # Fetch all workouts for this user
+        workout_rows = db_helper.fetch_all(
+            """
+            SELECT * FROM workouts
+            WHERE user_id = ?
+            ORDER BY date DESC, created_at DESC
+            """,
+            (user_id,)
+        )
+        
+        if not workout_rows:
+            return []
+        
+        # For each workout, get its exercises
+        result = []
+        for workout_row in workout_rows:
+            workout = Workout.from_row(workout_row)
+            
+            # Get exercises for this workout
+            exercise_rows = db_helper.fetch_all(
+                """
+                SELECT * FROM workout_exercises
+                WHERE workout_id = ?
+                ORDER BY order_index ASC
+                """,
+                (workout.id,)
+            )
+            
+            exercises = [WorkoutExercise.from_row(row) for row in exercise_rows]
+            
+            result.append({
+                "workout": workout.to_dict(),
+                "exercises": [ex.to_dict() for ex in exercises]
+            })
+        
+        return result
 
     @staticmethod
     def delete_workout(workout_id: int, user_id: int) -> bool:
