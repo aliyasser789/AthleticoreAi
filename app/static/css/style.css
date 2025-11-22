@@ -511,6 +511,7 @@ select:focus {
     margin: 0 auto;
     height: calc(100vh - 200px);
     min-height: 600px;
+    align-items: stretch;
 }
 
 /* Left Column: Daily Log Section */
@@ -677,6 +678,7 @@ select:focus {
     border-radius: 20px;
     padding: 30px;
     overflow: hidden;
+    align-items: stretch;
 }
 
 .calories-chat-window {
@@ -690,7 +692,7 @@ select:focus {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 400px;
+    min-height: 0;
 }
 
 /* Chat Input Area */
