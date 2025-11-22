@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 <body class="dashboard-body">
    <nav class="top-nav">
@@ -122,13 +122,25 @@
             card.innerHTML = `
                 <div class="day-badge">${dayAbbr}</div>
                 <div class="log-summary">${workout.workout_name}</div>
-                <button class="details-btn" onclick="openDetailsModalFromCard(this)">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
                 <button class="delete-log-btn" onclick="deleteLog(this)">
                     <i class="fas fa-times"></i>
                 </button>
             `;
+
+            // Make card clickable (except delete button)
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (event) => {
+                if (event.target.closest('.delete-log-btn')) return;
+                const workoutDataStr = card.getAttribute('data-workout');
+                if (workoutDataStr) {
+                    try {
+                        const workoutData = JSON.parse(workoutDataStr);
+                        openDetailsModal(workoutData);
+                    } catch (e) {
+                        console.error('Failed to parse workout data:', e);
+                    }
+                }
+            });
 
             return card;
         }
@@ -249,22 +261,6 @@
             });
         }
 
-        // Function to open details modal from card button
-        function openDetailsModalFromCard(btn) {
-            const card = btn.closest('.log-card');
-            if (!card) return;
-
-            const workoutDataStr = card.getAttribute('data-workout');
-            if (!workoutDataStr) return;
-
-            try {
-                const workoutItem = JSON.parse(workoutDataStr);
-                openDetailsModal(workoutItem);
-            } catch (e) {
-                console.error('Failed to parse workout data:', e);
-            }
-        }
-
         // Function to open details modal
         function openDetailsModal(workoutItem) {
             const modal = document.getElementById('details-modal');
@@ -276,57 +272,85 @@
             // Format date to day of week
             const day = formatDateToDay(workout.date);
             
-            // Get summary of exercises (first exercise name or count)
-            const summary = exercises.length > 0 
-                ? exercises[0].exercise_name 
-                : workout.workout_name;
+            // Populate workout-level fields
+            const workoutNameInput = document.getElementById('modal-workout-name');
+            const workoutDayEl = document.getElementById('modal-day');
+            const workoutNotesTextarea = document.getElementById('modal-workout-notes');
             
-            // Calculate totals from exercises
-            let totalWeight = 0;
-            let totalSets = 0;
-            let totalReps = 0;
-            let maxWeight = 0;
-            let maxPrevWeight = 0;
+            if (workoutNameInput) workoutNameInput.value = workout.workout_name || '';
+            if (workoutDayEl) workoutDayEl.textContent = day || 'N/A';
+            if (workoutNotesTextarea) workoutNotesTextarea.value = workout.notes || '';
             
-            exercises.forEach(ex => {
-                if (ex.weight_kg) {
-                    totalWeight += ex.weight_kg * (ex.sets || 0);
-                    maxWeight = Math.max(maxWeight, ex.weight_kg);
-                }
-                if (ex.previous_weight) {
-                    maxPrevWeight = Math.max(maxPrevWeight, ex.previous_weight);
-                }
-                totalSets += ex.sets || 0;
-                totalReps += (ex.reps || 0) * (ex.sets || 0);
-            });
-
-            // Populate modal with workout data
-            document.getElementById('modal-day').textContent = day || 'N/A';
-            document.getElementById('modal-summary').textContent = workout.workout_name || 'N/A';
-            document.getElementById('modal-weight').textContent = maxWeight > 0 ? `${maxWeight} kg` : 'N/A';
-            document.getElementById('modal-prev-weight').textContent = maxPrevWeight > 0 ? `${maxPrevWeight} kg` : 'N/A';
-            document.getElementById('modal-sets').textContent = totalSets > 0 ? totalSets : 'N/A';
-            document.getElementById('modal-reps').textContent = totalReps > 0 ? totalReps : 'N/A';
-            
-            // Build notes from workout notes and exercise details
-            let notesText = workout.notes || '';
-            if (exercises.length > 0) {
-                const exerciseDetails = exercises.map(ex => {
-                    let detail = `${ex.exercise_name}: `;
-                    if (ex.sets && ex.reps) detail += `${ex.sets}x${ex.reps}`;
-                    if (ex.weight_kg) detail += ` @ ${ex.weight_kg}kg`;
-                    if (ex.notes) detail += ` (${ex.notes})`;
-                    return detail;
-                }).join('\n');
+            // Clear and populate exercises
+            const exercisesContainer = document.getElementById('modal-exercises-list');
+            if (exercisesContainer) {
+                exercisesContainer.innerHTML = '';
                 
-                if (notesText) notesText += '\n\n';
-                notesText += exerciseDetails;
+                exercises.forEach((exercise, index) => {
+                    const exerciseBlock = createExerciseBlock(exercise, index);
+                    exercisesContainer.appendChild(exerciseBlock);
+                });
             }
-            
-            document.getElementById('modal-notes').textContent = notesText || 'No notes available.';
 
             // Show modal
             modal.style.display = 'flex';
+        }
+
+        // Function to create an editable exercise block
+        function createExerciseBlock(exercise, index) {
+            const block = document.createElement('div');
+            block.className = 'exercise-modal-block';
+            block.setAttribute('data-exercise-index', index);
+            
+            block.innerHTML = `
+                <div class="exercise-header-editable">
+                    <input type="text" class="exercise-name-input" value="${exercise.exercise_name || ''}" placeholder="Exercise Name">
+                    <i class="fas fa-pen edit-icon"></i>
+                </div>
+                
+                <div class="exercise-stats-row">
+                    <div class="stat-group">
+                        <label class="stat-label">Reps</label>
+                        <div class="old-new-inputs">
+                            <input type="number" class="stat-input old-value" value="${exercise.previous_reps || ''}" placeholder="Old" min="0">
+                            <input type="number" class="stat-input new-value" value="${exercise.reps || ''}" placeholder="New" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <label class="stat-label">Sets</label>
+                        <div class="old-new-inputs">
+                            <input type="number" class="stat-input old-value" value="${exercise.previous_sets || ''}" placeholder="Old" min="0">
+                            <input type="number" class="stat-input new-value" value="${exercise.sets || ''}" placeholder="New" min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="exercise-weight-row">
+                    <div class="weight-group">
+                        <label class="weight-label">Weight (KG)</label>
+                        <div class="weight-input-wrapper">
+                            <input type="number" class="weight-input" value="${exercise.weight_kg || ''}" placeholder="0" min="0" step="0.5">
+                            <i class="fas fa-pen edit-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="weight-group">
+                        <label class="weight-label">Previous Weight (KG)</label>
+                        <div class="weight-input-wrapper">
+                            <input type="number" class="weight-input" value="${exercise.previous_weight || ''}" placeholder="0" min="0" step="0.5">
+                            <i class="fas fa-pen edit-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="exercise-notes-group">
+                    <label class="exercise-notes-label">Notes</label>
+                    <textarea class="exercise-notes-textarea" placeholder="Add notes about this exercise...">${exercise.notes || ''}</textarea>
+                </div>
+            `;
+            
+            return block;
         }
 
         // Function to close details modal
@@ -404,41 +428,31 @@
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Workout Details</h2>
-                <button class="modal-close-btn" onclick="closeDetailsModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="modal-header-left">
+                    <input type="text" id="modal-workout-name" class="modal-workout-name-input" placeholder="Workout Name">
+                    <i class="fas fa-pen edit-icon"></i>
+                </div>
+                <div class="modal-header-right">
+                    <span class="modal-day-badge" id="modal-day">-</span>
+                    <button class="modal-close-btn" onclick="closeDetailsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div class="modal-body">
-                <div class="modal-info-grid">
-                    <div class="modal-info-item">
-                        <div class="modal-label">Day</div>
-                        <div class="modal-value" id="modal-day">-</div>
+                <div class="modal-workout-notes-section">
+                    <div class="modal-notes-header">
+                        <label class="modal-notes-label">Notes</label>
+                        <i class="fas fa-pen edit-icon"></i>
                     </div>
-                    <div class="modal-info-item">
-                        <div class="modal-label">Workout</div>
-                        <div class="modal-value" id="modal-summary">-</div>
-                    </div>
-                    <div class="modal-info-item">
-                        <div class="modal-label">Weight (kg)</div>
-                        <div class="modal-value" id="modal-weight">-</div>
-                    </div>
-                    <div class="modal-info-item">
-                        <div class="modal-label">Previous Weight (kg)</div>
-                        <div class="modal-value" id="modal-prev-weight">-</div>
-                    </div>
-                    <div class="modal-info-item">
-                        <div class="modal-label">Sets</div>
-                        <div class="modal-value" id="modal-sets">-</div>
-                    </div>
-                    <div class="modal-info-item">
-                        <div class="modal-label">Reps</div>
-                        <div class="modal-value" id="modal-reps">-</div>
-                    </div>
+                    <textarea id="modal-workout-notes" class="modal-workout-notes-textarea" placeholder="Add workout notes..."></textarea>
                 </div>
-                <div class="modal-notes-section">
-                    <div class="modal-label">Notes</div>
-                    <div class="modal-notes-text" id="modal-notes">-</div>
+                
+                <div class="modal-exercises-section">
+                    <h3 class="modal-exercises-title">Exercises</h3>
+                    <div id="modal-exercises-list" class="modal-exercises-list">
+                        <!-- Exercise blocks will be dynamically added here -->
+                    </div>
                 </div>
             </div>
         </div>

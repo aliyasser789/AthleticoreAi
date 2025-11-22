@@ -937,6 +937,18 @@ select:focus {
     transition: all 0.3s ease;
     position: relative;
     overflow: visible;
+    cursor: pointer;
+}
+
+.log-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    box-shadow: 0 0 15px rgba(0, 168, 255, 0.2);
+}
+
+.log-card .delete-log-btn {
+    cursor: pointer;
+    z-index: 10;
 }
 
 .log-card:hover {
@@ -1146,13 +1158,48 @@ select:focus {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.modal-title {
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.modal-workout-name-input {
+    background: transparent;
+    border: none;
+    color: #00A8FF;
     font-family: 'Orbitron', sans-serif;
     font-size: 28px;
     font-weight: 700;
-    color: #00A8FF;
     text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
-    margin: 0;
+    padding: 0;
+    flex: 1;
+    min-width: 200px;
+}
+
+.modal-workout-name-input:focus {
+    outline: none;
+    text-shadow: 0 0 15px rgba(0, 168, 255, 0.8);
+}
+
+.modal-header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.modal-day-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
 }
 
 .modal-close-btn {
@@ -1183,22 +1230,22 @@ select:focus {
 .modal-body {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 30px;
 }
 
-.modal-info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-.modal-info-item {
+.modal-workout-notes-section {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.modal-notes-header {
+    display: flex;
+    align-items: center;
     gap: 8px;
 }
 
-.modal-label {
+.modal-notes-label {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     color: #888;
@@ -1207,31 +1254,259 @@ select:focus {
     font-weight: 600;
 }
 
-.modal-value {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: #00A8FF;
-    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
-}
-
-.modal-notes-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.modal-notes-text {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #fff;
-    line-height: 1.6;
-    padding: 15px;
+.modal-workout-notes-textarea {
+    width: 100%;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    min-height: 80px;
+    padding: 15px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100px;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.modal-workout-notes-textarea:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.modal-exercises-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-exercises-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+    margin: 0;
+}
+
+.modal-exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Exercise Block Styles */
+.exercise-modal-block {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.exercise-modal-block:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.exercise-header-editable {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 168, 255, 0.1);
+    border: 1px solid rgba(0, 168, 255, 0.3);
+    border-radius: 10px;
+    padding: 12px 15px;
+}
+
+.exercise-name-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #00A8FF;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+    padding: 0;
+}
+
+.exercise-name-input:focus {
+    outline: none;
+    text-shadow: 0 0 15px rgba(0, 168, 255, 0.8);
+}
+
+.exercise-stats-row {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.old-new-inputs {
+    display: flex;
+    gap: 8px;
+}
+
+.stat-input {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.stat-input:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.stat-input.old-value {
+    background: rgba(255, 255, 255, 0.02);
+    color: #888;
+}
+
+.exercise-weight-row {
+    display: flex;
+    gap: 20px;
+}
+
+.weight-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.weight-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.weight-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+.weight-input-wrapper:focus-within {
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.weight-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 0;
+}
+
+.weight-input:focus {
+    outline: none;
+}
+
+.exercise-notes-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.exercise-notes-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.exercise-notes-textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 60px;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.exercise-notes-textarea:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+}
+
+.edit-icon {
+    color: #00A8FF;
+    font-size: 14px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.edit-icon:hover {
+    opacity: 1;
+}
+
+/* Custom scrollbar for exercises list */
+.modal-exercises-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-exercises-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.modal-exercises-list::-webkit-scrollbar-thumb {
+    background: #00A8FF;
+    border-radius: 10px;
+}
+
+.modal-exercises-list::-webkit-scrollbar-thumb:hover {
+    background: #008ecf;
 }
 
 /* Custom scrollbar for modal */
