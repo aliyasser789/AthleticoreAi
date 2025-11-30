@@ -30,43 +30,48 @@
 
         <div class="dashboard-cards">
             <div class="card" data-tilt>
-    <h3>Calories Left</h3>
-    <div class="progress-container" style="width: 160px; height: 160px;">
-    <svg class="progress-ring" width="160" height="160">
-        <circle class="progress-ring__circle-bg"
-            stroke="#333" stroke-width="10" fill="transparent"
-            r="70" cx="80" cy="80"/>
-        
-        <circle class="progress-ring__circle"
-            stroke="#00A8FF" stroke-width="10" fill="transparent"
-            r="70" cx="80" cy="80"/>
-    </svg>
-    
-    <div class="progress-text">
-        <span class="cal-value">1,500</span>
-        <span class="cal-label">kcal</span>
-    </div>
-</div>
-    
-     </div> <div class="card" data-tilt>
-                <h3>Current Goal</h3>
-                <div class="big-number">Bulking</div>
+                <h3>Calories Left</h3>
+                <div class="progress-container" style="width: 160px; height: 160px;">
+                    <svg class="progress-ring" width="160" height="160">
+                        <circle class="progress-ring__circle-bg"
+                            stroke="#333" stroke-width="10" fill="transparent"
+                            r="70" cx="80" cy="80"/>
+                        
+                        <circle class="progress-ring__circle"
+                            stroke="#00A8FF" stroke-width="10" fill="transparent"
+                            r="70" cx="80" cy="80"/>
+                    </svg>
+                    
+                    <div class="progress-text">
+                        <span class="cal-value" id="calories-left-value">0</span>
+                        <span class="cal-label">kcal</span>
+                    </div>
+                </div>
             </div>
+            
+            <div class="card" data-tilt>
+                <h3>Current Goal</h3>
+                <div class="big-number" id="current-goal">-</div>
+            </div>
+            
             <div class="card" data-tilt>
                 <h3>Next Workout</h3>
-                <div class="big-number">Leg Day</div>
+                <div class="big-number" id="next-workout">-</div>
             </div>
         </div>
    </main>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
    <script>
+    // Get user from localStorage
     const storedUser = localStorage.getItem('athleticore_user');
+    let currentUser = null;
+    
     if (storedUser) {
         try {
-            const user = JSON.parse(storedUser);
-            if (user?.username) {
+            currentUser = JSON.parse(storedUser);
+            if (currentUser?.username) {
                 const heading = document.getElementById('welcome-heading');
-                heading.textContent = `Welcome Back, ${user.username}.`;
+                heading.textContent = `Welcome Back, ${currentUser.username}.`;
             }
         } catch (err) {
             console.error('Failed to parse stored user', err);
@@ -79,32 +84,79 @@
         speed: 400,
         glare: true,
         "max-glare": 0.5
-    }); // <--- CRITICAL: This closes the Tilt settings!
+    });
 
-    // --- PART 2: NEON CIRCLE ANIMATION ---
-    // 1. Select the Circle
-    const circle = document.querySelector('.progress-ring__circle');
-    
-    // Check if the circle exists to prevent errors
-    if (circle) {
-        const radius = circle.r.baseVal.value;
-        const circumference = radius * 2 * Math.PI;
-
-        // 2. Set the circle line length
-        circle.style.strokeDasharray = `${circumference} ${circumference}`;
-        circle.style.strokeDashoffset = circumference;
-
-        // 3. Function to set progress
-        function setProgress(percent) {
-            const offset = circumference - (percent / 100) * circumference;
-            circle.style.strokeDashoffset = offset;
+    // --- PART 2: Load Dashboard Data and Update Circle ---
+    async function loadDashboardData() {
+        if (!currentUser || !currentUser.id) {
+            console.log('No user found');
+            return;
         }
-
-        // 4. Trigger the animation
-        setTimeout(() => {
-            setProgress(50); // Fills to 75%
-        }, 500);
+        
+        try {
+            const response = await fetch(`/api/dashboard?user_id=${currentUser.id}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to load dashboard data');
+            }
+            
+            const data = await response.json();
+            
+            // Update Current Goal
+            const currentGoalEl = document.getElementById('current-goal');
+            if (currentGoalEl && data.current_goal) {
+                const goalText = data.current_goal.charAt(0).toUpperCase() + data.current_goal.slice(1);
+                currentGoalEl.textContent = goalText;
+            }
+            
+            // Update Next Workout
+            const nextWorkoutEl = document.getElementById('next-workout');
+            if (nextWorkoutEl) {
+                if (data.next_workout) {
+                    nextWorkoutEl.textContent = data.next_workout;
+                } else {
+                    nextWorkoutEl.textContent = 'No workout scheduled';
+                }
+            }
+            
+            // Update Calories Left
+            const caloriesLeftEl = document.getElementById('calories-left-value');
+            if (caloriesLeftEl) {
+                caloriesLeftEl.textContent = Math.round(data.calories_left).toLocaleString();
+            }
+            
+            // Update Circle Progress
+            const circle = document.querySelector('.progress-ring__circle');
+            if (circle) {
+                const radius = circle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                
+                // Set the circle line length
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                circle.style.strokeDashoffset = circumference;
+                
+                // Function to set progress
+                function setProgress(percent) {
+                    const offset = circumference - (percent / 100) * circumference;
+                    circle.style.strokeDashoffset = offset;
+                }
+                
+                // Animate to the actual progress percentage
+                setTimeout(() => {
+                    setProgress(data.calorie_progress_percent || 0);
+                }, 500);
+            }
+            
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
     }
+    
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboardData();
+    });
 </script>
 </body>
 </html>
