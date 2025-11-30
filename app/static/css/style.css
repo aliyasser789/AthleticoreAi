@@ -1903,3 +1903,237 @@ select.form-input option {
 #coach-chat-window::-webkit-scrollbar-thumb:hover {
     background: #008ecf;
 }
+
+/* --- SETTINGS PAGE STYLES --- */
+
+.settings-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.settings-header {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.settings-form {
+    width: 100%;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.settings-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #00A8FF;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+    margin: 0 0 10px 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-card .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-card .input-group label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.settings-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #444;
+    padding: 12px 15px;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: #00A8FF;
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.3);
+    background: #1a1a1a;
+}
+
+.settings-input::placeholder {
+    color: #555;
+}
+
+.input-with-icon {
+    position: relative;
+    display: block;
+}
+
+.input-with-icon .settings-input {
+    padding-right: 40px;
+    width: 100%;
+}
+
+.edit-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00A8FF;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    user-select: none;
+    pointer-events: auto;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-icon:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    text-shadow: 0 0 8px rgba(0, 168, 255, 0.6);
+}
+
+.eye-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00A8FF;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    user-select: none;
+    pointer-events: auto;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.eye-icon:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    filter: drop-shadow(0 0 4px rgba(0, 168, 255, 0.6));
+}
+
+.settings-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.settings-save-btn {
+    width: 100%;
+    max-width: 500px;
+    background: #00A8FF;
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(0, 168, 255, 0.4);
+}
+
+.settings-save-btn:hover {
+    background: #008ecf;
+    box-shadow: 0 0 30px rgba(0, 168, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.settings-save-btn:active {
+    transform: translateY(0);
+}
+
+.settings-actions-bottom {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+}
+
+.logout-btn {
+    background: transparent;
+    color: #ff4444;
+    border: 2px solid #ff4444;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 68, 68, 0.1);
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+    transform: translateY(-2px);
+    border-color: #ff0000;
+    color: #ff0000;
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive: Stack columns on smaller screens */
+@media (max-width: 768px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .settings-container {
+        padding: 20px 15px;
+    }
+    
+    .settings-header {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+}

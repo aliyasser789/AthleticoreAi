@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - Athleticore.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+    <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
+            <li><a href="/calories">Calories</a></li>
+            <li><a href="/workout">Workout</a></li>
+            <li><a href="/coach">Coach</a></li>
+            <li><a href="/settings" class="active">Settings</a></li>
+        </ul>
+    </nav>
+    
+    <main class="main-content">
+        <div class="settings-container">
+            <h1 class="settings-header">Account Settings</h1>
+            
+            <form id="settings-form" class="settings-form">
+                <div class="settings-grid">
+                    <!-- LEFT COLUMN: Account Security -->
+                    <div class="settings-card">
+                        <h2 class="settings-card-title">Account Security</h2>
+                        
+                        <div class="input-group">
+                            <label for="username">Username</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="username" name="username" class="settings-input">
+                                <span class="edit-icon">✎</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="email">Email</label>
+                            <div class="input-with-icon">
+                                <input type="email" id="email" name="email" class="settings-input">
+                                <span class="edit-icon">✎</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <div class="input-with-icon">
+                                <input type="password" id="password" name="password" class="settings-input">
+                                <span class="eye-icon" id="toggle-password">👁</span>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group" id="confirm-password-group" style="display: none;">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="confirm-password" name="confirm-password" class="settings-input">
+                        </div>
+                    </div>
+                    
+                    <!-- RIGHT COLUMN: Body Stats -->
+                    <div class="settings-card">
+                        <h2 class="settings-card-title">Body Stats</h2>
+                        
+                        <div class="input-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" name="age" class="settings-input" min="1" max="150">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="height">Height (cm)</label>
+                            <input type="number" id="height" name="height" class="settings-input" min="1" max="300" step="0.1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" class="settings-input" min="1" max="500" step="0.1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button type="submit" class="save-btn settings-save-btn">Save Changes</button>
+                </div>
+            </form>
+            
+            <div class="settings-actions-bottom">
+                <button type="button" class="logout-btn" id="logout-btn">Logout</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Pre-fill inputs from localStorage
+        const storedUser = localStorage.getItem('athleticore_user');
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                if (user.username) document.getElementById('username').value = user.username;
+                if (user.email) document.getElementById('email').value = user.email;
+                if (user.age) document.getElementById('age').value = user.age;
+                if (user.height) document.getElementById('height').value = user.height;
+                if (user.weight) document.getElementById('weight').value = user.weight;
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+            }
+        }
+        
+        // Show Password Toggle
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('toggle-password');
+        const confirmPasswordGroup = document.getElementById('confirm-password-group');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        
+        togglePassword.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                togglePassword.textContent = '👁‍🗨';
+            } else {
+                passwordInput.type = 'password';
+                togglePassword.textContent = '👁';
+            }
+        });
+        
+        // Show confirm password when password field is focused and has value
+        passwordInput.addEventListener('focus', function() {
+            if (passwordInput.value.length > 0) {
+                confirmPasswordGroup.style.display = 'block';
+            }
+        });
+        
+        passwordInput.addEventListener('input', function() {
+            if (passwordInput.value.length > 0) {
+                confirmPasswordGroup.style.display = 'block';
+            } else {
+                confirmPasswordGroup.style.display = 'none';
+                confirmPasswordInput.value = '';
+            }
+        });
+        
+        // Save Logic
+        const settingsForm = document.getElementById('settings-form');
+        settingsForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Update localStorage if user data exists
+            if (storedUser) {
+                try {
+                    const user = JSON.parse(storedUser);
+                    const formData = new FormData(settingsForm);
+                    
+                    // Update user object with form data
+                    if (formData.get('username')) user.username = formData.get('username');
+                    if (formData.get('email')) user.email = formData.get('email');
+                    if (formData.get('age')) user.age = formData.get('age');
+                    if (formData.get('height')) user.height = formData.get('height');
+                    if (formData.get('weight')) user.weight = formData.get('weight');
+                    
+                    // Only update password if both fields match and are not empty
+                    const password = formData.get('password');
+                    const confirmPassword = formData.get('confirm-password');
+                    if (password && confirmPassword && password === confirmPassword) {
+                        // In a real app, you'd hash this before storing
+                        user.password = password;
+                    }
+                    
+                    localStorage.setItem('athleticore_user', JSON.stringify(user));
+                } catch (err) {
+                    console.error('Failed to update user data', err);
+                }
+            }
+            
+            alert('Settings Saved');
+        });
+        
+        // Logout Logic
+        const logoutBtn = document.getElementById('logout-btn');
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('athleticore_user');
+                window.location.href = '/login';
+            }
+        });
+    </script>
+</body>
+</html>
+
