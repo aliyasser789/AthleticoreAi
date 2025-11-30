@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nutrition Coach - Athleticore.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body class="dashboard-body">
+    <nav class="top-nav">
+        <div class="logo">ATHLETICORE<span class="ai-text">.AI</span></div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/tdee">TDEE</a></li>
+            <li><a href="/calories">Calories</a></li>
+            <li><a href="/workout">Workout</a></li>
+            <li><a href="/coach" class="active">Coach</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+    
+    <main class="main-content">
+        <div class="coach-console">
+            <div class="coach-header">
+                <h1>AI Nutrition Coach<span class="online-dot"></span></h1>
+            </div>
+            
+            <div class="chat-window" id="coach-chat-window"></div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="coach-input" class="chat-input" placeholder="Ask me anything..." autocomplete="off">
+                <button type="button" id="coach-send-btn" class="send-btn">Send</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Select elements
+        const chatWindow = document.getElementById('coach-chat-window');
+        const chatInput = document.getElementById('coach-input');
+        const sendBtn = document.getElementById('coach-send-btn');
+        
+        // Function to append message to chat window
+        function appendMessage(text, role = 'bot') {
+            const messageEl = document.createElement('div');
+            messageEl.classList.add('message', role === 'user' ? 'user-msg' : 'bot-msg');
+            messageEl.textContent = text;
+            chatWindow.appendChild(messageEl);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        // Function to send message
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) {
+                return;
+            }
+            
+            // Append user message
+            appendMessage(message, 'user');
+            chatInput.value = '';
+            sendBtn.disabled = true;
+            
+            try {
+                // POST request to API
+                const response = await fetch('/api/coach/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                const replyText = data.reply || 'Sorry, I did not understand that.';
+                
+                // Append bot message
+                appendMessage(replyText, 'bot');
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('There was an error reaching the coach. Please try again.', 'bot');
+            } finally {
+                sendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+        
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
+
