@@ -44,6 +44,23 @@
         const chatInput = document.getElementById('coach-input');
         const sendBtn = document.getElementById('coach-send-btn');
         
+        // Get user from localStorage
+        let currentUser = null;
+        
+        // Function to get user from localStorage
+        function getUser() {
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                return null;
+            }
+            try {
+                return JSON.parse(storedUser);
+            } catch (err) {
+                console.error('Failed to parse stored user', err);
+                return null;
+            }
+        }
+        
         // Function to append message to chat window
         function appendMessage(text, role = 'bot') {
             const messageEl = document.createElement('div');
@@ -53,6 +70,35 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
         
+        // Function to load chat history
+        async function loadChatHistory() {
+            if (!currentUser || !currentUser.id) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/chat/history?user_id=${currentUser.id}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load chat history');
+                }
+                
+                const data = await response.json();
+                const messages = data.messages || [];
+                
+                // Clear chat window
+                chatWindow.innerHTML = '';
+                
+                // Append all messages
+                messages.forEach(msg => {
+                    const role = msg.sender === 'user' ? 'user' : 'bot';
+                    appendMessage(msg.message, role);
+                });
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
+        }
+        
         // Function to send message
         async function sendMessage() {
             const message = chatInput.value.trim();
@@ -60,30 +106,46 @@
                 return;
             }
             
-            // Append user message
+            // Check if user is logged in
+            if (!currentUser || !currentUser.id) {
+                appendMessage('Please log in first to use the AI coach.', 'bot');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                return;
+            }
+            
+            // Append user message immediately
             appendMessage(message, 'user');
             chatInput.value = '';
             sendBtn.disabled = true;
             
             try {
                 // POST request to API
-                const response = await fetch('/api/coach/chat', {
+                const response = await fetch('/api/chat/send', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        message: message
+                    })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Network response was not ok');
                 }
                 
                 const data = await response.json();
-                const replyText = data.reply || 'Sorry, I did not understand that.';
                 
-                // Append bot message
-                appendMessage(replyText, 'bot');
+                // Append AI response
+                if (data.ai_message && data.ai_message.message) {
+                    appendMessage(data.ai_message.message, 'bot');
+                } else {
+                    appendMessage('Sorry, I did not receive a response.', 'bot');
+                }
             } catch (error) {
                 console.error('Error:', error);
                 appendMessage('There was an error reaching the coach. Please try again.', 'bot');
@@ -92,6 +154,22 @@
                 chatInput.focus();
             }
         }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = getUser();
+            
+            if (!currentUser || !currentUser.id) {
+                appendMessage('Please log in to start chatting with your AI coach.', 'bot');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                return;
+            }
+            
+            // Load chat history
+            loadChatHistory();
+        });
         
         // Event listeners
         sendBtn.addEventListener('click', sendMessage);
