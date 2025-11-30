@@ -95,19 +95,144 @@
         </div>
     </main>
     
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
     <script>
-        // Pre-fill inputs from localStorage
-        const storedUser = localStorage.getItem('athleticore_user');
-        if (storedUser) {
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Get user from localStorage
+        function getUser() {
+            const storedUser = localStorage.getItem('athleticore_user');
+            if (!storedUser) {
+                return null;
+            }
             try {
-                const user = JSON.parse(storedUser);
-                if (user.username) document.getElementById('username').value = user.username;
-                if (user.email) document.getElementById('email').value = user.email;
-                if (user.age) document.getElementById('age').value = user.age;
-                if (user.height) document.getElementById('height').value = user.height;
-                if (user.weight) document.getElementById('weight').value = user.weight;
+                return JSON.parse(storedUser);
             } catch (err) {
                 console.error('Failed to parse stored user', err);
+                return null;
+            }
+        }
+        
+        // Load settings from backend
+        async function loadSettings() {
+            const user = getUser();
+            if (!user || !user.id) {
+                showToast('Please log in first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const usernameField = document.getElementById('username');
+                const emailField = document.getElementById('email');
+                const ageField = document.getElementById('age');
+                const heightField = document.getElementById('height');
+                const weightField = document.getElementById('weight');
+                
+                // Set placeholder to indicate loading
+                usernameField.placeholder = 'Loading...';
+                emailField.placeholder = 'Loading...';
+                
+                // Ensure user_id is a number
+                const userId = parseInt(user.id);
+                if (isNaN(userId)) {
+                    throw new Error('Invalid user ID');
+                }
+                
+                console.log('Loading settings for user_id:', userId);
+                const response = await fetch(`/api/settings?user_id=${userId}`);
+                console.log('Response status:', response.status, response.statusText);
+                console.log('Response headers:', response.headers.get('content-type'));
+                
+                // Get response text first (can only read once)
+                const responseText = await response.text();
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    let errorMessage = 'Failed to load settings';
+                    try {
+                        const errorData = JSON.parse(responseText);
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        // If response is not JSON, use the text as error message
+                        errorMessage = responseText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+                // Parse JSON response
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid response from server. Please check the console for details.');
+                }
+                
+                const settings = data.settings;
+                
+                if (!settings) {
+                    throw new Error('No settings data received');
+                }
+                
+                // Populate form fields with database values
+                usernameField.value = settings.username || '';
+                emailField.value = settings.email || '';
+                ageField.value = settings.age || '';
+                heightField.value = settings.height || '';
+                weightField.value = settings.weight || '';
+                
+                // Reset placeholders
+                usernameField.placeholder = '';
+                emailField.placeholder = '';
+                
+                console.log('Settings loaded successfully:', settings);
+                
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                showToast('Error loading settings: ' + error.message, 'error');
+                
+                // Reset placeholders on error
+                const usernameField = document.getElementById('username');
+                const emailField = document.getElementById('email');
+                if (usernameField) usernameField.placeholder = '';
+                if (emailField) emailField.placeholder = '';
             }
         }
         
@@ -145,37 +270,128 @@
         
         // Save Logic
         const settingsForm = document.getElementById('settings-form');
-        settingsForm.addEventListener('submit', function(event) {
+        settingsForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             
-            // Update localStorage if user data exists
-            if (storedUser) {
-                try {
-                    const user = JSON.parse(storedUser);
-                    const formData = new FormData(settingsForm);
-                    
-                    // Update user object with form data
-                    if (formData.get('username')) user.username = formData.get('username');
-                    if (formData.get('email')) user.email = formData.get('email');
-                    if (formData.get('age')) user.age = formData.get('age');
-                    if (formData.get('height')) user.height = formData.get('height');
-                    if (formData.get('weight')) user.weight = formData.get('weight');
-                    
-                    // Only update password if both fields match and are not empty
-                    const password = formData.get('password');
-                    const confirmPassword = formData.get('confirm-password');
-                    if (password && confirmPassword && password === confirmPassword) {
-                        // In a real app, you'd hash this before storing
-                        user.password = password;
-                    }
-                    
-                    localStorage.setItem('athleticore_user', JSON.stringify(user));
-                } catch (err) {
-                    console.error('Failed to update user data', err);
+            const user = getUser();
+            if (!user || !user.id) {
+                showToast('Please log in first', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+                return;
+            }
+            
+            // Get form values
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const ageValue = document.getElementById('age').value.trim();
+            const heightValue = document.getElementById('height').value.trim();
+            const weightValue = document.getElementById('weight').value.trim();
+            
+            // Basic validation
+            if (!username) {
+                showToast('Username is required', 'error');
+                return;
+            }
+            if (!email) {
+                showToast('Email is required', 'error');
+                return;
+            }
+            
+            // Validate password if provided
+            if (password) {
+                if (!confirmPassword) {
+                    showToast('Please confirm your password', 'error');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match', 'error');
+                    return;
                 }
             }
             
-            alert('Settings Saved');
+            // Parse numeric values
+            const age = ageValue ? parseInt(ageValue) : null;
+            const height = heightValue ? parseInt(heightValue) : null;
+            const weight = weightValue ? parseInt(weightValue) : null;
+            
+            // Validate numeric fields
+            if (age !== null && (isNaN(age) || age <= 0)) {
+                showToast('Age must be a positive number', 'error');
+                return;
+            }
+            if (height !== null && (isNaN(height) || height <= 0)) {
+                showToast('Height must be a positive number', 'error');
+                return;
+            }
+            if (weight !== null && (isNaN(weight) || weight <= 0)) {
+                showToast('Weight must be a positive number', 'error');
+                return;
+            }
+            
+            // Build payload with all fields
+            const payload = {
+                user_id: user.id,
+                username: username,
+                email: email
+            };
+            
+            // Add optional fields only if they have values
+            if (password) {
+                payload.password = password;
+                payload.confirm_password = confirmPassword;
+            }
+            if (age !== null) payload.age = age;
+            if (height !== null) payload.height = height;
+            if (weight !== null) payload.weight = weight;
+            
+            // Disable submit button
+            const submitBtn = settingsForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+            
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to update settings');
+                }
+                
+                // Update localStorage with new settings
+                if (data.settings) {
+                    user.username = data.settings.username;
+                    user.email = data.settings.email;
+                    user.age = data.settings.age;
+                    user.height = data.settings.height;
+                    user.weight = data.settings.weight;
+                    localStorage.setItem('athleticore_user', JSON.stringify(user));
+                }
+                
+                // Clear password fields
+                document.getElementById('password').value = '';
+                document.getElementById('confirm-password').value = '';
+                document.getElementById('confirm-password-group').style.display = 'none';
+                
+                showToast('Settings saved successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
         });
         
         // Logout Logic
@@ -186,6 +402,27 @@
                 window.location.href = '/login';
             }
         });
+        
+        // Load settings when page loads
+        let settingsLoaded = false;
+        
+        function initializeSettings() {
+            if (settingsLoaded) return;
+            settingsLoaded = true;
+            
+            // Wait a tiny bit to ensure all elements are ready
+            setTimeout(() => {
+                loadSettings();
+            }, 100);
+        }
+        
+        if (document.readyState === 'loading') {
+            // DOM is still loading, wait for DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', initializeSettings);
+        } else {
+            // DOM is already loaded
+            initializeSettings();
+        }
     </script>
 </body>
 </html>

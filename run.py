@@ -5,6 +5,7 @@ from app.api.food_feed_routes import register_food_feed_routes
 from app.api.calories_routes import register_calories_routes
 from app.api.workout_routes import register_workout_routes
 from app.api.chat_routes import register_chat_routes
+from app.api.settings_routes import register_settings_routes
 
 
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -42,6 +43,10 @@ def workout_page():
 def coach_page():
     return render_template("coach.html")
 
+@app.route("/settings")
+def settings_page():
+    return render_template("settings.html")
+
 @app.route("/create-log")
 def create_log_page():
     return render_template("create_log.html")
@@ -59,6 +64,7 @@ register_food_feed_routes(app)
 register_calories_routes(app)
 register_workout_routes(app)
 register_chat_routes(app)
+register_settings_routes(app)
 
 
 
