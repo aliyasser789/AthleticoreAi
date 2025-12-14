@@ -73,14 +73,13 @@
         </div>
    </main>
    <script>
-        // Get current user from localStorage
-        const storedUser = localStorage.getItem('athleticore_user');
+  // Get current user from localStorage
+  const storedUser = localStorage.getItem('athleticore_user');
         const currentUser = storedUser ? JSON.parse(storedUser) : null;
-        
+
         if (!currentUser) {
             window.location.href = '/login';
         }
-        
         // Initialize state variables
         let totalProtein = 0;
         let totalCarbs = 0;
@@ -327,8 +326,10 @@
             const fat = Math.round(foodItem.fat || 0);
             
             // Only show delete button if we have a log ID
-            const deleteButtonHtml = foodItem.id ? `
-                <button class="food-delete-btn" onclick="handleDelete(${foodItem.id}, this)" title="Delete this entry">
+            const logId = foodItem.id;
+            const logIdForDelete = logId || null;
+            const deleteButtonHtml = logIdForDelete ? `
+                <button class="food-delete-btn" onclick="handleDelete(${logIdForDelete}, this)" title="Delete this entry">
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
@@ -339,7 +340,7 @@
                 <div class="food-item-main">
                     <div class="food-name">${foodName}</div>
                     <div class="food-calories-container">
-                        <div class="food-calories">${calories} kcal</div>
+                        <div class="kcal-text">${calories} kcal</div>
                         ${deleteButtonHtml}
                     </div>
                 </div>
