@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime, date, date
+from datetime import date
+from app.models.base import BaseModel
+
 
 @dataclass
-class CalorieLog:# name of the class is CalorieLog
+class CalorieLog(BaseModel):  # name of the class is CalorieLog
     #data fields of the class
     id: Optional[int]
     user_id: int
@@ -47,11 +49,6 @@ class CalorieLog:# name of the class is CalorieLog
             "created_at": self.created_at,
             "is_deleted": self.is_deleted,
         }
-    @staticmethod
-    #for timestamp
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-    
     @staticmethod
     #for today's date
     def today_iso() -> str:

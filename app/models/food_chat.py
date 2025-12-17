@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class FoodChat:
+class FoodChat(BaseModel):
     id: Optional[int]
     food_feed_id: int
     role: str
@@ -34,8 +35,3 @@ class FoodChat:
             "content": self.content,
             "created_at": self.created_at,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-

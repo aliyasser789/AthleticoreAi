@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class ChatMessage:
+class ChatMessage(BaseModel):
     id: Optional[int]
     user_id: int
     sender: str
@@ -34,8 +35,3 @@ class ChatMessage:
             "message": self.message,
             "created_at": self.created_at,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-

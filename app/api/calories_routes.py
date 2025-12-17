@@ -4,6 +4,7 @@ from app.services.food_chatbot_client import process_food_entry
 from app.services.tdee_service import TdeeService
 from app.db import db_helper
 from app.models.user import User
+from app.models.base import BaseModel
 from datetime import datetime
 
 
@@ -138,7 +139,7 @@ def register_calories_routes(app):
                 logs = Calorie_manager.get_logs(user_id)
             
             return jsonify({
-                "logs": [log.to_dict() for log in logs]
+                "logs": BaseModel.serialize_many(logs)
             }), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
@@ -167,7 +168,7 @@ def register_calories_routes(app):
                     surplus = difference
             
             return jsonify({
-                "logs": [log.to_dict() for log in logs],
+                "logs": BaseModel.serialize_many(logs),
                 "total_calories": total_calories,
                 "goal_calories": goal_calories,
                 "surplus": surplus
@@ -231,4 +232,3 @@ def register_calories_routes(app):
         return jsonify({
             "message": "Log deleted successfully"
         }), 200
-

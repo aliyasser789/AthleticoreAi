@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from app.services.chat_manager import ChatManager
+from app.models.base import BaseModel
 
 
 def register_chat_routes(app):
@@ -36,7 +37,7 @@ def register_chat_routes(app):
         messages = ChatManager.get_chat_history(user_id)
         
         return jsonify({
-            "messages": [msg.to_dict() for msg in messages]
+            "messages": BaseModel.serialize_many(messages)
         }), 200
 
     @app.route("/api/chat/history", methods=["DELETE"])
@@ -56,4 +57,3 @@ def register_chat_routes(app):
         return jsonify({
             "message": "Chat history deleted successfully"
         }), 200
-

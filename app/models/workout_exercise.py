@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class WorkoutExercise:
+class WorkoutExercise(BaseModel):
     id: Optional[int]
     workout_id: int
     exercise_name: str
@@ -47,8 +48,3 @@ class WorkoutExercise:
             "order_index": self.order_index,
             "notes": self.notes,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-

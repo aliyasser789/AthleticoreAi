@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class TdeeChat:
+class TdeeChat(BaseModel):
     id: Optional[int]
     tdee_profile_id: int
     role: str
@@ -34,8 +35,3 @@ class TdeeChat:
             "content": self.content,
             "created_at": self.created_at,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-

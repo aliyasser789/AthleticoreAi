@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class FoodFeed:
+class FoodFeed(BaseModel):
     id: Optional[int]
     user_id: int
     content: str
@@ -49,8 +50,3 @@ class FoodFeed:
             "entry_date": self.entry_date,
             "created_at": self.created_at,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-

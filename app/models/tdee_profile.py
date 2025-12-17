@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from app.models.base import BaseModel
+
 
 @dataclass
-class TdeeProfile:
+class TdeeProfile(BaseModel):
     id: Optional[int]
     user_id: int
     activity_level: str
@@ -47,8 +48,3 @@ class TdeeProfile:
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
-
-    @staticmethod
-    def now_iso() -> str:
-        return datetime.utcnow().isoformat()
-
