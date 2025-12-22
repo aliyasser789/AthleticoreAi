@@ -29,7 +29,8 @@ class BaseModel(ABC):
         return self.to_dict()
 
     @staticmethod
-    def serialize_many(models: Iterable["BaseModel"]) -> List[Dict]:
+    def serialize_many(models: Iterable["BaseModel"]) -> List[Dict]:#so you want to convert list of onjects 
+        #to dictionaries each object a dictionary so returns a list of dictionary
         """
         Serialize any iterable of BaseModel subclasses without knowing
         their concrete types (simple runtime polymorphism).

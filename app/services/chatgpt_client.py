@@ -12,6 +12,69 @@ if not GROQ_API_KEY:
 client = Groq(api_key=GROQ_API_KEY)
 
 
+class ChatGPTClient:
+    """Encapsulate Groq client for the TDEE coach chat."""
+
+    def __init__(self, groq_client: Groq) -> None:
+        self._client = groq_client
+
+    def get_client(self) -> Groq:
+        return self._client
+
+    def set_client(self, groq_client: Groq) -> None:
+        self._client = groq_client
+
+    def chat_with_coach(
+        self,
+        user_name: str,
+        age: int,
+        gender: str,
+        height: int,
+        weight: int,
+        message: str,
+        chat_history: List[Dict[str, str]]
+    ) -> tuple[str, Optional[Dict]]:
+        """
+        Send a message to the AI coach and get response.
+        Returns: (reply_text, tdee_result_dict or None)
+        """
+        # Create system prompt with user stats
+        system_prompt = create_system_prompt(user_name, age, gender, height, weight)
+
+        # Build messages for the API
+        messages = [{"role": "system", "content": system_prompt}]
+
+        # Add chat history (convert to API format)
+        for msg in chat_history:
+            messages.append({
+                "role": msg.get("role", "user"),
+                "content": msg.get("content", "")
+            })
+
+        # Add current user message
+        messages.append({"role": "user", "content": message})
+
+        try:
+            # Call Groq API
+            response = self._client.chat.completions.create(
+                model="llama-3.3-70b-versatile",  # Updated to current model
+                messages=messages,
+                temperature=0.7,
+                max_tokens=1000
+            )
+
+            reply_text = response.choices[0].message.content
+
+            # Try to parse TDEE result from response
+            tdee_result = parse_tdee_result(reply_text)
+
+            return reply_text, tdee_result
+
+        except Exception as e:
+            print(f"Error calling Groq API: {e}")
+            return f"I'm sorry, I encountered an error. Please try again. Error: {str(e)}", None
+
+
 def create_system_prompt(user_name: str, age: int, gender: str, height: int, weight: int) -> str:
     """Create system prompt for the AI coach with user stats."""
     return f"""You are an expert AI fitness coach for Athleticore.AI. Your role is to help users determine their fitness goals and calculate their TDEE (Total Daily Energy Expenditure).
@@ -74,43 +137,7 @@ def chat_with_coach(
     message: str,
     chat_history: List[Dict[str, str]]
 ) -> tuple[str, Optional[Dict]]:
-    """
-    Send a message to the AI coach and get response.
-    Returns: (reply_text, tdee_result_dict or None)
-    """
-    # Create system prompt with user stats
-    system_prompt = create_system_prompt(user_name, age, gender, height, weight)
-    
-    # Build messages for the API
-    messages = [{"role": "system", "content": system_prompt}]
-    
-    # Add chat history (convert to API format)
-    for msg in chat_history:
-        messages.append({
-            "role": msg.get("role", "user"),
-            "content": msg.get("content", "")
-        })
-    
-    # Add current user message
-    messages.append({"role": "user", "content": message})
-    
-    try:
-        # Call Groq API
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",  # Updated to current model
-            messages=messages,
-            temperature=0.7,
-            max_tokens=1000
-        )
-        
-        reply_text = response.choices[0].message.content
-        
-        # Try to parse TDEE result from response
-        tdee_result = parse_tdee_result(reply_text)
-        
-        return reply_text, tdee_result
-        
-    except Exception as e:
-        print(f"Error calling Groq API: {e}")
-        return f"I'm sorry, I encountered an error. Please try again. Error: {str(e)}", None
+    return ChatGPTClient(client).chat_with_coach(
+        user_name, age, gender, height, weight, message, chat_history
+    )
 

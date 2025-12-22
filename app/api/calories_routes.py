@@ -33,7 +33,7 @@ def register_calories_routes(app):
             user = User.from_row(user_row)
             
             # Use frontend chat history (simplified - no DB chat storage for calories)
-            final_history = chat_history if chat_history else []
+            final_history = chat_history 
             
             # Call AI chatbot to process food entry
             reply_text, nutrition_result = process_food_entry(
@@ -83,67 +83,6 @@ def register_calories_routes(app):
             import traceback
             traceback.print_exc()
             return jsonify({"error": str(e)}), 500
-    @app.route("/api/calories/log", methods=["POST"])
-    def add_calorie_log():
-        """Add a new calorie log entry."""
-        data = request.get_json() or {}
-        
-        username = data.get("username")
-        description = data.get("description")
-        calories = data.get("calories")
-        protein_g = data.get("protein_g")
-        carbs_g = data.get("carbs_g")
-        fat_g = data.get("fat_g")
-        entry_date = data.get("entry_date")
-        
-        if not username:
-            return jsonify({"error": "username is required"}), 400
-        
-        # Get user from database
-        user_row = db_helper.fetch_one(
-            "SELECT * FROM users WHERE username = ?",
-            (username,)
-        )
-        if not user_row:
-            return jsonify({"error": "User not found"}), 404
-        
-        user = User.from_row(user_row)
-        
-        try:
-            log_entry = Calorie_manager.add_log(
-                user_id=user.id,
-                description=description,
-                calories=float(calories) if calories is not None else None,
-                protein_g=float(protein_g) if protein_g is not None else None,
-                carbs_g=float(carbs_g) if carbs_g is not None else None,
-                fat_g=float(fat_g) if fat_g is not None else None,
-                entry_date=entry_date
-            )
-            
-            return jsonify({
-                "message": "Calorie log added successfully",
-                "log": log_entry.to_dict()
-            }), 201
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    @app.route("/api/calories/logs/<int:user_id>", methods=["GET"])
-    def get_calorie_logs(user_id):
-        """Get calorie logs for a user, optionally filtered by date."""
-        entry_date = request.args.get("date")  # Optional date parameter
-        
-        try:
-            if entry_date:
-                logs = Calorie_manager.get_logs(user_id, entry_date)
-            else:
-                logs = Calorie_manager.get_logs(user_id)
-            
-            return jsonify({
-                "logs": BaseModel.serialize_many(logs)
-            }), 200
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
     @app.route("/api/calories/logs/<int:user_id>/today", methods=["GET"])
     def get_today_logs(user_id):
         """Get today's calorie logs for a user, including total calories, goal calories, and surplus."""
@@ -175,19 +114,6 @@ def register_calories_routes(app):
             }), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-
-    @app.route("/api/calories/log/<int:log_id>", methods=["GET"])
-    def get_calorie_log(log_id):
-        """Get a specific calorie log by ID."""
-        log = Calorie_manager.get_log_by_id(log_id)
-        
-        if not log:
-            return jsonify({"error": "Log entry not found"}), 404
-        
-        return jsonify({
-            "log": log.to_dict()
-        }), 200
-
     @app.route("/api/calories/log/<int:log_id>", methods=["PUT"])
     def update_calorie_log(log_id):
         """Update a calorie log entry."""
