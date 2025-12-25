@@ -1,12 +1,14 @@
 # Athleticore.AI
 ### *The Intelligent Fitness & Nutrition Ecosystem*
 
-![Athleticore.AI Banner](https://via.placeholder.com/1000x300?text=ATHLETICORE.AI+BANNER)
+<img src="Athleticore images/main.png" width="800">
 
 ---
 
 ## 🚀 Overview
 **Athleticore.AI** is a comprehensive, AI-driven wellness platform developed for the **2025-2026** period. It serves as a personalized fitness coach and nutritionist, enabling users to track metabolic needs, log nutrition via natural language, and manage detailed workout regimes through a high-performance, futuristic interface.
+
+<img src="Athleticore images/image.png" width="800">
 
 ## ✨ Key Features
 
@@ -16,10 +18,14 @@
 * **Surplus Monitoring**: Automatically calculates the difference between consumed calories and the user's daily goal.
 * **History Management**: A scrollable food feed allows for auditing and deleting past entries.
 
+<img src="Athleticore images/image2.png" width="800">
+
 ### 🏋️ Advanced Workout Logger
 * **Comprehensive Tracking**: Users can create logs for specific training sessions, recording exercise names, sets, reps, and weight.
 * **Progressive Overload**: Tracks "Previous Weight" for every exercise to help users monitor strength gains over time.
 * **Dynamic Management**: A visual feed of all workouts with detailed modals for updating session notes and performance stats.
+
+<img src="Athleticore images/3.png" width="800">
 
 ### 📊 Metabolic & Goal Profile (TDEE)
 * **AI-Assisted Calculation**: Personalized TDEE (Total Daily Energy Expenditure) calculation based on lifestyle and activity levels.
